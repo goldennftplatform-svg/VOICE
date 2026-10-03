@@ -118,7 +118,7 @@ window.addEventListener('beforeunload', event => { if ((blob && !savedLocally) |
 window.addEventListener('pagehide', releaseMic);
 async function init() {
   if (publicBooth) {
-    $('invite-status').textContent = 'Record and save named takes to your browser’s Voice Library. Automatic delivery to the project team is not connected yet; no recordings are uploaded from this page.';
+    $('invite-status').textContent = 'This is the browser-local recording booth. To send recordings to the team, open your actor invitation link for the connected studio at voice-actor-intake.voice-intake.workers.dev. Takes saved on this page stay in this browser.';
     $('voice-form').hidden = false;
     $('consent').required = false;
     $('consent').disabled = true;

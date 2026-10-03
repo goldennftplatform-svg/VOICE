@@ -4,7 +4,7 @@ const incoming = new URLSearchParams(location.hash.slice(1)).get('review');
 if (incoming) sessionStorage.setItem('voice-review', incoming);
 history.replaceState(null, '', location.pathname);
 const token = sessionStorage.getItem('voice-review') || '';
-let mode = incoming ? 'team' : 'local', takes = [], next = null, generation = 0;
+let mode = token && !pages ? 'team' : 'local', takes = [], next = null, generation = 0;
 const urls = new Set();
 const status = text => { $('library-status').textContent = text; };
 function cleanup() { for (const url of urls) URL.revokeObjectURL(url); urls.clear(); }
@@ -74,7 +74,7 @@ async function load(append = false) {
   if (!append) { takes = []; next = null; cleanup(); $('voice-list').replaceChildren(); }
   $('local-tab').setAttribute('aria-pressed', mode === 'local'); $('team-tab').setAttribute('aria-pressed', mode === 'team');
   $('library-notice').textContent = mode === 'local' ? 'These takes are stored only in this browser, not uploaded or shared across devices. Download backups before clearing browser data.' : 'Private submissions are visible only through a team review link. Actor invitation links cannot open this library.';
-  if (mode === 'team' && pages) { status('Team uploads are not connected on GitHub Pages yet. The private library will be available through your team review link once the upload service is deployed.'); return; }
+  if (mode === 'team' && pages) { status('Team uploads are available in the connected studio at voice-actor-intake.voice-intake.workers.dev. Open your private team review link to browse them; this GitHub Pages site only stores browser-local takes.'); return; }
   if (mode === 'team' && !token) { status('Open the private team review link from your project administrator to see uploaded voices.'); return; }
   status('Loading voices…');
   try {

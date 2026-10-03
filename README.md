@@ -2,6 +2,24 @@
 
 A phone-friendly link for actors to **name a voice, record or upload a take, review it, and send it**. No actor account or app installation. The site is designed for a small cast of 12–20 voices.
 
+## Connected upload service
+
+**https://voice-actor-intake.voice-intake.workers.dev** is deployed with private GitHub storage configured. Actors must open an invitation link to submit; reviewers must open a private review link to browse submissions. The older GitHub Pages site remains a browser-local recording booth.
+
+On the configured Windows workstation, generate a separate invitation for each actor:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/Make-Voice-Links.ps1 -ActorName "Alex"
+```
+
+Generate your private team review link (valid for 7 days):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/Make-Voice-Links.ps1
+```
+
+Actor links last 30 days. Reuse each actor's link for their additional takes. The helper decrypts the invitation secret for the current Windows user; `.local/` is excluded from Git. To provision or replace storage credentials, run `scripts/Connect-Storage.ps1`; it accepts a hidden GitHub token, configures the Worker secrets, and keeps the invitation secret encrypted with Windows DPAPI. Never commit or share that directory. Token expiry will require running the connection helper with a replacement token.
+
 ## Public website
 
 **https://goldennftplatform-svg.github.io/VOICE/**
