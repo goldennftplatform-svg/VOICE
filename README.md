@@ -6,7 +6,19 @@ A phone-friendly link for actors to **name a voice, record or upload a take, rev
 
 **https://goldennftplatform-svg.github.io/VOICE/**
 
-GitHub Pages serves the recording booth free over HTTPS. You can record, listen, select an existing audio file, and save your recording to your device. **Private GitHub submissions require the Cloudflare setup below**; the Pages booth explicitly labels this limitation and does not pretend to send recordings. Until the upload service is connected, share saved audio and transcripts directly with the project contact. Pushes to `public/` automatically update the live Pages site.
+GitHub Pages serves the recording booth free over HTTPS. You can record, listen, select an existing audio file, and save named takes to this browser's **Voice Library**. **Private GitHub submissions require the Cloudflare setup below**; the Pages booth explicitly labels this limitation and does not pretend to send recordings. Until the upload service is connected, download and share saved audio and transcripts directly with the project contact. Pushes to `public/` automatically update the live Pages site.
+
+### Browse voices by name
+
+Open **https://goldennftplatform-svg.github.io/VOICE/library.html**. The **This browser** tab lists takes you explicitly saved in that browser. Search names, load audio previews, view transcripts, download, rename, or remove local takes. Different browsers/devices have separate libraries; clearing site data deletes local takes. Recordings saved before this library feature was added are not automatically imported—choose the audio file, enter a name, and save it again.
+
+The **Team uploads** tab is private and requires the deployed Worker. Generate a reviewer link with the same `INVITE_SECRET` used for invitations:
+
+```powershell
+node scripts/review-link.mjs https://YOUR-WORKER.workers.dev 7
+```
+
+The link expires in 7 days and grants access to all submitted recordings. Keep it within your team. Ordinary actor invitations cannot list or play private submissions. The list loads 20 takes at a time; search filters loaded takes, and **Load more uploads** expands the searchable list. Audio is fetched only when a reviewer requests a preview, through the authenticated Worker; GitHub credentials and private download URLs never reach the browser. Private files are not published to GitHub Pages.
 
 **Code:** `goldennftplatform-svg/VOICE` (public). **Audio:** `goldennftplatform-svg/VOICE-samples` (private). GitHub Pages alone cannot securely accept recordings; a Cloudflare Worker serves this site and writes submissions to GitHub using a server-side secret.
 

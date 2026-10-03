@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111b20"><title>Voice Library — VOICE</title>
+  <link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./library.css">
+  <script src="./library-store.js" defer></script><script src="./library.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">ı▌ı▌ı</span> VOICE<span class="brand-dot">.</span></a><a href="./" class="text-button">Record a voice ↗</a></header>
+  <main class="library-main">
+    <section class="library-header"><p class="eyebrow">THE VOICES BEHIND THE STORY</p><h1>Your Voice Library<span class="brand-dot">.</span></h1><p class="lede">Find a name. Pick a take. Hear the character.</p></section>
+    <section class="library-panel" aria-label="Voice library">
+      <div class="library-tabs"><button id="local-tab" type="button" class="record-button" aria-pressed="true">This browser</button><button id="team-tab" type="button" class="record-button" aria-pressed="false">Team uploads</button></div>
+      <p id="library-notice" class="hint"></p>
+      <div class="library-controls"><div><label for="search">Search by voice name</label><input id="search" type="search" placeholder="Find Alex, Narrator, Pauly…" autocomplete="off"></div><button id="refresh" class="record-button" type="button">Refresh</button></div>
+      <p id="library-status" role="status" aria-live="polite"></p>
+      <div id="voice-list"></div>
+      <button id="load-more" class="record-button" type="button" hidden>Load more uploads</button>
+    </section>
+  </main>
+  <footer><span>VOICE. <span class="muted">Every take has a story.</span></span><a href="./">Back to recording</a></footer>
+</body>
+</html>

@@ -7,14 +7,15 @@ if (token) sessionStorage.setItem('voice-invite', token);
 history.replaceState(null, '', location.pathname);
 let blob, objectURL, recorder, stream, interval, started, sending = false, recording = false;
 let submissionId = crypto.randomUUID(), consentVersion;
+let savedLocally = false;
 const message = (text, error = false) => { $('message').textContent = text; $('message').classList.toggle('error', error); };
 const releaseMic = () => { stream?.getTracks().forEach(track => track.stop()); stream = null; clearInterval(interval); };
 function selectAudio(file) {
   if (objectURL) URL.revokeObjectURL(objectURL);
-  blob = file; submissionId = crypto.randomUUID();
+  blob = file; submissionId = crypto.randomUUID(); savedLocally = false;
   objectURL = URL.createObjectURL(file);
   $('playback').src = objectURL; $('download').href = objectURL;
-  $('download').download = file.name || (file.type.includes('mp4') ? 'my-voice.m4a' : 'my-voice.webm');
+  $('download').download = file.name || (file.type.includes('mp4') ? 'my-voice.m4a' : file.type.includes('ogg') ? 'my-voice.ogg' : 'my-voice.webm');
   $('file-label').textContent = `${file.name || 'Your recording'} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   $('preview').hidden = false; message('Listen to your take, then check the transcript below.');
 }
@@ -87,8 +88,13 @@ $('voice-form').onsubmit = async event => {
   event.preventDefault(); if (sending || recording) return;
   if (!blob) { message('Record or choose an audio file first.', true); $('record').focus(); return; }
   if (publicBooth) {
-    $('download').click();
-    message('Recording download started. Nothing has been uploaded. Share the saved audio and exact transcript with the person who invited you.');
+    sending = true; $('fields').disabled = true;
+    try {
+      await window.voiceLibraryStore.save({ id: submissionId, voice_name: $('voice-name').value.trim(), transcript: $('transcript').value.trim(), language: $('language').value.trim(), received_at: new Date().toISOString(), filename: $('download').download, audio: blob });
+      savedLocally = true;
+      message('Saved to the Voice Library on this browser. Open “Browse the Voice Library” to find and play it by name. Nothing has been uploaded; use “Save a copy to my device” for a backup.');
+    } catch { message('This browser could not save the take. Use “Save a copy to my device” above to keep your audio.', true); }
+    finally { sending = false; $('fields').disabled = false; }
     return;
   }
   const form = new FormData();
@@ -107,17 +113,18 @@ $('another').onclick = () => {
   clearAudio(); submissionId = crypto.randomUUID(); $('consent').checked = false;
   $('success').hidden = true; $('voice-form').hidden = false; message('Ready for your next take.'); $('record').focus();
 };
-window.addEventListener('beforeunload', event => { if (blob || recording || sending) { event.preventDefault(); event.returnValue = ''; } });
+$('fields').addEventListener('input', () => { savedLocally = false; });
+window.addEventListener('beforeunload', event => { if ((blob && !savedLocally) || recording || sending) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', releaseMic);
 async function init() {
   if (publicBooth) {
-    $('invite-status').textContent = 'Public recording booth: record, listen, and save a take to your device. Automatic delivery to the project team is not connected yet; no recordings are uploaded from this page.';
+    $('invite-status').textContent = 'Record and save named takes to your browser’s Voice Library. Automatic delivery to the project team is not connected yet; no recordings are uploaded from this page.';
     $('voice-form').hidden = false;
     $('consent').required = false;
     $('consent').disabled = true;
     $('consent').closest('label').hidden = true;
-    document.querySelector('.privacy-note').textContent = 'Your recording stays in this browser until you save it. To deliver a take now, share the saved audio and its transcript directly with your project contact.';
-    $('submit').textContent = 'Save my recording ↓';
+    document.querySelector('.privacy-note').textContent = 'The Voice Library stores takes only on this browser and device. Clearing browser data can remove them. Download a backup and share it with your project contact to deliver a take.';
+    $('submit').textContent = 'Save to my Voice Library →';
     return;
   }
   if (!token) { $('invite-status').textContent = 'Welcome to the booth. Open the personal invitation link from your project team to record and send your voice.'; return; }

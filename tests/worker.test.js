@@ -6,8 +6,8 @@ import worker, { verifyInvite, detectAudio, storeSubmission, CONSENT_VERSION } f
 const secret = 'test-secret-that-is-at-least-thirty-two-characters';
 const inviteId = '11111111-1111-4111-8111-111111111111';
 const receipt = '22222222-2222-4222-8222-222222222222';
-function token(exp = Math.floor(Date.now() / 1000) + 3600) {
-  const payload = Buffer.from(JSON.stringify({ id: inviteId, exp, name: 'Test Actor' })).toString('base64url');
+function token(exp = Math.floor(Date.now() / 1000) + 3600, scope) {
+  const payload = Buffer.from(JSON.stringify({ id: inviteId, exp, name: 'Test Actor', scope })).toString('base64url');
   return `${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
 }
 const env = { INVITE_SECRET: secret, GITHUB_TOKEN: 'test-only', SAMPLES_REPO: 'test/private', SAMPLES_BRANCH: 'main' };
@@ -68,4 +68,30 @@ test('atomic submission retries a concurrent branch update; receipt retries do n
   assert.equal(commits, 2); assert.equal(stored.consent.accepted, true); assert.equal(stored.sha256.length, 64);
   assert.equal((await worker.fetch(request(), env)).status, 201); assert.equal(commits, 2);
   assert.equal((await worker.fetch(request({ transcript: 'Different words should not overwrite a saved take.' }), env)).status, 409);
+});
+test('private library rejects missing credentials and ordinary actor links', async () => {
+  for (const path of ['/api/library', '/api/library/audio']) {
+    assert.equal((await worker.fetch(new Request(`https://voice.test${path}`), env)).status, 401);
+    assert.equal((await worker.fetch(new Request(`https://voice.test${path}`, { headers: { Authorization: `Bearer ${token()}` } }), env)).status, 403);
+  }
+});
+test('reviewer library paginates metadata and proxies private audio without exposing credentials', async t => {
+  const review = token(undefined, 'review');
+  const get = path => worker.fetch(new Request(`https://voice.test${path}`, { headers: { Authorization: `Bearer ${review}` } }), env);
+  const meta = { invite_id: inviteId, submission_id: receipt, voice_name: '<script>Alex</script>', transcript: 'These are the exact spoken words.', language: 'English', audio_file: 'original.wav', received_at: '2026-10-03T00:00:00Z' };
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    const path = new URL(url).pathname.replace('/repos/test/private', '');
+    if (path === '') return Response.json({ private: true });
+    if (path === '/git/trees/main') return Response.json({ truncated: false, tree: Array.from({ length: 21 }, () => ({ type: 'blob', path: `submissions/${inviteId}/${receipt}/metadata.json`, sha: 'metadata' })) });
+    if (path === '/git/blobs/metadata') return Response.json({ content: Buffer.from(JSON.stringify(meta)).toString('base64') });
+    if (path.startsWith('/contents/')) { assert.equal(options.headers.Accept, 'application/vnd.github.raw+json'); return new Response(audio()); }
+    throw Error(path);
+  });
+  const first = await (await get('/api/library')).json();
+  assert.equal(first.takes.length, 20); assert.equal(first.next, 20); assert.equal(first.takes[0].voice_name, meta.voice_name);
+  const last = await (await get('/api/library?offset=20')).json(); assert.equal(last.takes.length, 1); assert.equal(last.next, null);
+  const preview = await get(`/api/library/audio?invite=${inviteId}&id=${receipt}&file=original.wav`);
+  assert.equal(preview.status, 200); assert.equal(preview.headers.get('Content-Type'), 'audio/wav'); assert.equal(preview.headers.get('Cache-Control'), 'no-store');
+  assert.deepEqual(Buffer.from(await preview.arrayBuffer()), audio());
+  assert.equal((await get(`/api/library/audio?invite=${inviteId}&id=${receipt}&file=../../secret`)).status, 400);
 });

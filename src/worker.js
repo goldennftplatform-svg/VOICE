@@ -131,10 +131,49 @@ async function upload(request, env) {
   await storeSubmission(env, metadata, audio);
   return json({ ok: true, receipt: id }, 201);
 }
+const uuidPattern = '[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}';
+async function authorizeReview(request, env) {
+  const invite = await verifyInvite(request.headers.get('Authorization')?.replace(/^Bearer /, ''), env.INVITE_SECRET);
+  if (invite.scope !== 'review') fail(403, 'A private team review link is required. Actor invitations cannot browse recordings.');
+  if (!env.GITHUB_TOKEN || env.PREVIEW_ONLY === 'true') fail(503, 'Private team storage is not connected yet.');
+  if (!(await github(env, '')).private) fail(503, 'Private recording storage is not configured.');
+}
+async function listVoices(request, env) {
+  await authorizeReview(request, env);
+  const offset = Number(new URL(request.url).searchParams.get('offset') || 0);
+  if (!Number.isSafeInteger(offset) || offset < 0) fail(400, 'Invalid library page.');
+  const tree = await github(env, `/git/trees/${encodeURIComponent(env.SAMPLES_BRANCH || 'main')}?recursive=1`);
+  if (tree.truncated) fail(503, 'This library is too large to list completely. Use the local sync tool.');
+  const pattern = new RegExp(`^submissions/(${uuidPattern})/(${uuidPattern})/metadata\\.json$`);
+  const manifests = tree.tree.filter(item => item.type === 'blob' && pattern.test(item.path)).sort((a, b) => a.path.localeCompare(b.path));
+  const takes = await Promise.all(manifests.slice(offset, offset + 20).map(async item => {
+    const blob = await github(env, `/git/blobs/${item.sha}`);
+    const meta = JSON.parse(new TextDecoder().decode(unbase64url(blob.content.replace(/\s/g, ''))));
+    const match = item.path.match(pattern);
+    if (meta.invite_id !== match[1] || meta.submission_id !== match[2] || typeof meta.voice_name !== 'string' || typeof meta.received_at !== 'string' || !/^original\.(wav|m4a|mp3|webm|ogg|flac)$/.test(meta.audio_file)) fail(502, 'A submission has invalid library metadata. Review it in the private repository.');
+    return { invite_id: meta.invite_id, submission_id: meta.submission_id, voice_name: meta.voice_name, transcript: meta.transcript, language: meta.language, audio_file: meta.audio_file, received_at: meta.received_at };
+  }));
+  return json({ takes, next: offset + 20 < manifests.length ? offset + 20 : null, total: manifests.length });
+}
+async function previewVoice(request, env) {
+  await authorizeReview(request, env);
+  const query = new URL(request.url).searchParams;
+  const invite = query.get('invite'), id = query.get('id'), file = query.get('file');
+  const uuid = new RegExp(`^${uuidPattern}$`);
+  if (!uuid.test(invite || '') || !uuid.test(id || '') || !/^original\.(wav|m4a|mp3|webm|ogg|flac)$/.test(file || '')) fail(400, 'Invalid recording path.');
+  const response = await fetch(`https://api.github.com/repos/${env.SAMPLES_REPO}/contents/submissions/${invite}/${id}/${file}?ref=${encodeURIComponent(env.SAMPLES_BRANCH || 'main')}`, {
+    headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github.raw+json', 'User-Agent': 'voice-actor-intake', 'X-GitHub-Api-Version': '2022-11-28' },
+  });
+  if (!response.ok) fail(response.status === 404 ? 404 : 502, 'Could not load this recording. Refresh the library and try again.');
+  const types = { wav: 'audio/wav', m4a: 'audio/mp4', mp3: 'audio/mpeg', webm: 'audio/webm', ogg: 'audio/ogg', flac: 'audio/flac' };
+  return new Response(response.body, { headers: { ...headers, 'Content-Type': types[file.split('.').pop()], 'Content-Disposition': `inline; filename="${file}"` } });
+}
 export default {
   async fetch(request, env) {
     try {
       const path = new URL(request.url).pathname;
+      if (path === '/api/library' && request.method === 'GET') return await listVoices(request, env);
+      if (path === '/api/library/audio' && request.method === 'GET') return await previewVoice(request, env);
       if (path === '/api/invite' && request.method === 'GET') {
         const invite = await verifyInvite(request.headers.get('Authorization')?.replace(/^Bearer /, ''), env.INVITE_SECRET);
         return json({ name: invite.name || '', consent: CONSENT_TEXT, consent_version: CONSENT_VERSION });
