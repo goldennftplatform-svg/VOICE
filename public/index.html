@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111b20">
+  <meta name="description" content="Your voice, ready for the next story. A private recording booth for our voice actors.">
+  <title>VOICE — Your recording booth</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/" aria-label="VOICE home"><span class="brand-mark" aria-hidden="true">ı▌ı▌ı</span> VOICE<span class="brand-dot">.</span></a><span class="private-badge">● PRIVATE ACTOR STUDIO</span></header>
+  <main>
+    <section class="intro">
+      <p class="eyebrow">A LITTLE RECORDING. A LOT OF POSSIBILITY.</p>
+      <h1>Every story starts<br>with <em>your voice.</em></h1>
+      <p class="lede">Find a quiet spot, make yourself comfortable, and give us a little of you. Your phone is all you need.</p>
+      <div class="intro-tags"><span>About 2 minutes</span><span>No account needed</span></div>
+      <div class="sound-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <aside class="tips"><span class="small-label">SOUND YOUR BEST</span><p><strong>Quiet room. Natural voice.</strong><br>Hold your phone a hand’s width away. Skip music and voice filters. A few deep breaths, and you’re ready.</p></aside>
+    </section>
+    <section class="booth" aria-label="Voice submission">
+      <div class="booth-heading"><span class="eyebrow">THE RECORDING BOOTH</span><span class="live-dot" aria-hidden="true"></span></div>
+      <p id="invite-status" role="status">Checking your invitation…</p>
+      <form id="voice-form" hidden>
+        <fieldset id="fields">
+          <section class="step"><h2><span>01</span> Make it yours</h2><label for="voice-name">Voice / character name</label><input id="voice-name" name="voice_name" placeholder="e.g. Alex · The Storyteller" minlength="2" maxlength="60" required autocomplete="nickname"><p class="hint">Use the same name for all your takes.</p></section>
+          <section class="step"><h2><span>02</span> Give it a voice</h2>
+            <div class="prompt-card"><div class="prompt-heading"><span class="small-label">YOUR READING PROMPT</span><span>~20 seconds</span></div><p id="reading-prompt">Every voice has a story to tell. Some stories begin with a quiet morning, others with a leap into the unknown. I’m here to bring those moments to life, one word at a time. Let’s see where this story takes us.</p><button type="button" class="text-button" id="use-prompt">Use this text as my transcript ↗</button></div>
+            <div class="recorder"><span class="small-label" id="record-label">WHEN YOU’RE READY</span><div class="timer" id="timer" aria-live="off">00:00</div><button type="button" id="record" class="record-button"><span aria-hidden="true">●</span> Start recording</button><p class="hint" id="record-help">Read the prompt, or say something of your own.</p></div>
+            <div class="divider"><span>or use a recording you already have</span></div>
+            <label class="upload" for="audio-file"><span aria-hidden="true">↥</span> Choose an audio file <small>M4A, MP3, WAV, WebM, OGG, FLAC · max 10 MB</small></label><input id="audio-file" class="file-input" type="file" accept="audio/*,.m4a,.webm,.flac">
+            <div id="preview" hidden><div class="preview-heading"><strong id="file-label">Your recording</strong><button type="button" id="clear-audio" class="text-button">Remove</button></div><audio id="playback" controls preload="metadata"></audio><p class="hint">Listen back. Clear words and a little personality are all we need.</p><a id="download" class="text-button" download="my-voice.webm">Save a copy to my device</a></div>
+          </section>
+          <section class="step"><h2><span>03</span> Check & send</h2><label for="transcript">What did you say?</label><textarea id="transcript" rows="5" minlength="10" maxlength="12000" required placeholder="Paste or type the exact words in your recording."></textarea><p class="hint">If you read the prompt, tap “Use this text” above. Edit any words you changed. Accurate text helps your AI voice sound like you.</p><label for="language">Language spoken</label><input id="language" value="English" maxlength="60" required>
+            <label class="consent"><input type="checkbox" id="consent" required><span id="consent-text"></span></label><p class="privacy-note">Your audio and transcript go to a private GitHub repository for the project team. To request removal or discuss usage, contact the person who invited you and share your receipt.</p>
+          </section>
+          <button type="submit" class="submit" id="submit">Send my voice <span aria-hidden="true">↗</span></button>
+        </fieldset>
+        <div id="progress-wrap" hidden><label for="progress">Uploading your recording…</label><progress id="progress" max="100" value="0"></progress></div>
+        <p id="message" role="status" aria-live="polite"></p>
+      </form>
+      <section id="success" hidden tabindex="-1"><div class="success-mark" aria-hidden="true">✓</div><p class="eyebrow">THAT’S A WRAP</p><h2>Your voice is in.</h2><p>Thanks for bringing your story to the studio. The team can now prepare your recording for the local voice workflow.</p><div class="receipt"><span class="small-label">YOUR RECEIPT</span><code id="receipt"></code></div><p class="hint">Save this receipt if you need to ask about your recording.</p><button type="button" id="another" class="submit">Send another take ↗</button></section>
+    </section>
+  </main>
+  <footer><span>VOICE. <span class="muted">Made for the voices behind the story.</span></span><span>RECORD NATURALLY. MAKE IT YOURS.</span></footer>
+</body>
+</html>

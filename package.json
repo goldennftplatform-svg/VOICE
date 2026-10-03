@@ -1,0 +1,14 @@
+{
+  "name": "voice-intake",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "preview": "node scripts/preview.mjs",
+    "deploy": "wrangler deploy",
+    "test": "node --test tests/*.test.js",
+    "invite": "node scripts/invite.mjs"
+  },
+  "devDependencies": { "wrangler": "^4.0.0" }
+}
