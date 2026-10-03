@@ -2,6 +2,12 @@
 
 A phone-friendly link for actors to **name a voice, record or upload a take, review it, and send it**. No actor account or app installation. The site is designed for a small cast of 12–20 voices.
 
+## Public website
+
+**https://goldennftplatform-svg.github.io/VOICE/**
+
+GitHub Pages serves the recording booth free over HTTPS. You can record, listen, select an existing audio file, and save your recording to your device. **Private GitHub submissions require the Cloudflare setup below**; the Pages booth explicitly labels this limitation and does not pretend to send recordings. Until the upload service is connected, share saved audio and transcripts directly with the project contact. Pushes to `public/` automatically update the live Pages site.
+
 **Code:** `goldennftplatform-svg/VOICE` (public). **Audio:** `goldennftplatform-svg/VOICE-samples` (private). GitHub Pages alone cannot securely accept recordings; a Cloudflare Worker serves this site and writes submissions to GitHub using a server-side secret.
 
 ## Preview locally now

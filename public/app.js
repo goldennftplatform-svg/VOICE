@@ -1,5 +1,6 @@
 /* No analytics, external scripts, or browser-visible GitHub credentials. */
 const $ = id => document.getElementById(id);
+const publicBooth = location.hostname.endsWith('.github.io');
 const token = new URLSearchParams(location.hash.slice(1)).get('invite') || sessionStorage.getItem('voice-invite') || '';
 if (token) sessionStorage.setItem('voice-invite', token);
 // Fragments never reach the server; also remove from the address bar after opening.
@@ -85,6 +86,11 @@ function send(form) {
 $('voice-form').onsubmit = async event => {
   event.preventDefault(); if (sending || recording) return;
   if (!blob) { message('Record or choose an audio file first.', true); $('record').focus(); return; }
+  if (publicBooth) {
+    $('download').click();
+    message('Recording download started. Nothing has been uploaded. Share the saved audio and exact transcript with the person who invited you.');
+    return;
+  }
   const form = new FormData();
   form.append('audio', blob, 'recording'); form.append('voice_name', $('voice-name').value.trim());
   form.append('transcript', $('transcript').value.trim()); form.append('language', $('language').value.trim());
@@ -104,6 +110,16 @@ $('another').onclick = () => {
 window.addEventListener('beforeunload', event => { if (blob || recording || sending) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', releaseMic);
 async function init() {
+  if (publicBooth) {
+    $('invite-status').textContent = 'Public recording booth: record, listen, and save a take to your device. Automatic delivery to the project team is not connected yet; no recordings are uploaded from this page.';
+    $('voice-form').hidden = false;
+    $('consent').required = false;
+    $('consent').disabled = true;
+    $('consent').closest('label').hidden = true;
+    document.querySelector('.privacy-note').textContent = 'Your recording stays in this browser until you save it. To deliver a take now, share the saved audio and its transcript directly with your project contact.';
+    $('submit').textContent = 'Save my recording ↓';
+    return;
+  }
   if (!token) { $('invite-status').textContent = 'Welcome to the booth. Open the personal invitation link from your project team to record and send your voice.'; return; }
   try {
     const response = await fetch('/api/invite', { headers: { Authorization: `Bearer ${token}` } }); const data = await response.json();
