@@ -66,6 +66,7 @@ test('atomic submission retries a concurrent branch update; receipt retries do n
   const response = await worker.fetch(request(), env);
   assert.equal(response.status, 201); assert.equal((await response.json()).receipt, receipt);
   assert.equal(commits, 2); assert.equal(stored.consent.accepted, true); assert.equal(stored.sha256.length, 64);
+  assert.match(stored.speaker_id, /^[a-f0-9-]{36}$/);
   assert.equal((await worker.fetch(request(), env)).status, 201); assert.equal(commits, 2);
   assert.equal((await worker.fetch(request({ transcript: 'Different words should not overwrite a saved take.' }), env)).status, 409);
 });
@@ -74,6 +75,18 @@ test('private library rejects missing credentials and ordinary actor links', asy
     assert.equal((await worker.fetch(new Request(`https://voice.test${path}`), env)).status, 401);
     assert.equal((await worker.fetch(new Request(`https://voice.test${path}`, { headers: { Authorization: `Bearer ${token()}` } }), env)).status, 403);
   }
+});
+test('shared link creates isolated upload-only sessions without an invitation', async () => {
+  const sessionEnv = { ...env, PUBLIC_INTAKE: 'true' };
+  const open = () => worker.fetch(new Request('https://voice.test/api/session', { method: 'POST', headers: { Origin: 'https://voice.test' } }), sessionEnv);
+  const one = await (await open()).json(), two = await (await open()).json();
+  const actorOne = await verifyInvite(one.token, secret), actorTwo = await verifyInvite(two.token, secret);
+  assert.equal(actorOne.scope, 'upload'); assert.notEqual(actorOne.id, actorTwo.id);
+  assert.equal(one.consent_version, CONSENT_VERSION); assert.ok(one.consent);
+  assert.equal((await worker.fetch(new Request('https://voice.test/api/library', { headers: { Authorization: `Bearer ${one.token}` } }), sessionEnv)).status, 403);
+  assert.equal((await worker.fetch(new Request('https://voice.test/api/session', { method: 'POST', headers: { Origin: 'https://evil.test' } }), sessionEnv)).status, 403);
+  assert.equal((await worker.fetch(new Request('https://voice.test/api/session', { method: 'POST' }), env)).status, 503);
+  assert.equal((await worker.fetch(new Request('https://voice.test/api/session', { method: 'POST', headers: { Origin: 'https://voice.test' } }), { ...sessionEnv, UPLOAD_LIMITER: { limit: async () => ({ success: false }) } })).status, 429);
 });
 test('reviewer library paginates metadata and proxies private audio without exposing credentials', async t => {
   const review = token(undefined, 'review');

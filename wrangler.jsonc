@@ -6,6 +6,7 @@
   "workers_dev": true,
   "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
   "vars": {
+    "PUBLIC_INTAKE": "true",
     "SAMPLES_REPO": "goldennftplatform-svg/VOICE-samples",
     "SAMPLES_BRANCH": "main"
   },

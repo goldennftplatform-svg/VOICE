@@ -4,9 +4,13 @@ A phone-friendly link for actors to **name a voice, record or upload a take, rev
 
 ## Connected upload service
 
-**https://voice-actor-intake.voice-intake.workers.dev** is deployed with private GitHub storage configured. Actors must open an invitation link to submit; reviewers must open a private review link to browse submissions. The older GitHub Pages site remains a browser-local recording booth.
+**Share this one link with every actor: https://voice-actor-intake.voice-intake.workers.dev/**
 
-On the configured Windows workstation, generate a separate invitation for each actor:
+They open it on their own phone, enter their voice name, record or choose a file, confirm the transcript/permission, and click **Upload to the team library**. No account or individual invitation is required. A receipt is shown only after the audio and metadata are committed to private GitHub. All devices contribute to the same team collection.
+
+The old GitHub Pages recording URL now redirects to this connected service. The normal recording flow never saves only to browser storage. Reviewers still need a private team link to access the recordings.
+
+Optional pre-named actor invitations remain supported:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/Make-Voice-Links.ps1 -ActorName "Alex"
@@ -18,17 +22,19 @@ Generate your private team review link (valid for 7 days):
 powershell -ExecutionPolicy Bypass -File scripts/Make-Voice-Links.ps1
 ```
 
-Actor links last 30 days. Reuse each actor's link for their additional takes. The helper decrypts the invitation secret for the current Windows user; `.local/` is excluded from Git. To provision or replace storage credentials, run `scripts/Connect-Storage.ps1`; it accepts a hidden GitHub token, configures the Worker secrets, and keeps the invitation secret encrypted with Windows DPAPI. Never commit or share that directory. Token expiry will require running the connection helper with a replacement token.
+Optional actor links last 30 days. The shared URL does not expire: the browser obtains an upload-only session automatically. The helper decrypts the invitation secret for the current Windows user; `.local/` is excluded from Git. To provision or replace storage credentials, run `scripts/Connect-Storage.ps1`; it accepts a hidden GitHub token, configures the Worker secrets, and keeps the invitation secret encrypted with Windows DPAPI. Never commit or share that directory. GitHub token expiry requires running the connection helper with a replacement token.
 
 ## Public website
 
 **https://goldennftplatform-svg.github.io/VOICE/**
 
-GitHub Pages serves the recording booth free over HTTPS. You can record, listen, select an existing audio file, and save named takes to this browser's **Voice Library**. **Private GitHub submissions require the Cloudflare setup below**; the Pages booth explicitly labels this limitation and does not pretend to send recordings. Until the upload service is connected, download and share saved audio and transcripts directly with the project contact. Pushes to `public/` automatically update the live Pages site.
+GitHub Pages redirects to the Cloudflare recording service, including existing actor/reviewer link fragments. Pushes to `public/` automatically update Pages; deploy backend/Cloudflare changes with `npm run deploy`.
 
 ### Browse voices by name
 
-Open **https://goldennftplatform-svg.github.io/VOICE/library.html**. The **This browser** tab lists takes you explicitly saved in that browser. Search names, load audio previews, view transcripts, download, rename, or remove local takes. Different browsers/devices have separate libraries; clearing site data deletes local takes. Recordings saved before this library feature was added are not automatically imported—choose the audio file, enter a name, and save it again.
+Open your private team review link. The default list is **Shared team uploads**: search names, load audio previews, view transcripts, and download submitted takes from every device.
+
+**Recover recordings saved by the old browser-only site:** on the same phone and browser that made them, open **https://goldennftplatform-svg.github.io/VOICE/library.html?local=1**. This explicit recovery page is the only browser-local library. Load/download the old take, then upload that file through the shared URL above. Old local recordings cannot be fetched remotely from somebody else's phone. Do not clear that browser's site data before downloading them.
 
 The **Team uploads** tab is private and requires the deployed Worker. Generate a reviewer link with the same `INVITE_SECRET` used for invitations:
 
@@ -77,17 +83,17 @@ Set `INVITE_SECRET` in your **local terminal environment** to the same secret st
 npm run invite -- https://voice-actor-intake.YOUR-SUBDOMAIN.workers.dev "Alex" 30
 ```
 
-Send the printed link to that actor. It expires in 30 days. Run again for each actor. Keep the same link for additional takes from the same actor: its unique invitation ID groups their submissions without name collisions. A newly generated invitation creates a new actor group even if the display name is identical.
+These invitations are optional; the bare shared URL already supports submission. A pre-named invitation expires in 30 days. Use the same name and browser/link for an actor's additional takes. The upload session/invitation plus normalized name generates a separate speaker ID; this prevents two names using one phone from entering the same training folder. Different devices with identical display names remain separate speaker IDs until the operator explicitly reconciles them.
 
-The token is in the URL fragment, not the server URL/logs. The browser moves it into session storage. Invitations are bearer links: anyone with one can submit until expiry. There is a 10-attempt/minute/invitation rate limit, not a lifetime quota. Rotate `INVITE_SECRET` to invalidate all invitations. Per-invitation revocation is not implemented.
+Invitation tokens are initially in the URL fragment, not server URLs/logs. Upload-only tokens are retained in local storage when available; audio itself is not. Session creation and uploads are limited to 10 attempts/minute/IP, with a separate per-session upload limit. These are basic rate limits, not bot verification or lifetime quotas. `PUBLIC_INTAKE=true` enables the shared link; set it to `false` and redeploy to disable automatic session issuance while retaining unexpired invitations/sessions. Rotating `INVITE_SECRET` invalidates existing actor and reviewer tokens; with public intake enabled, actors can obtain new upload-only sessions. Per-invitation revocation is not implemented.
 
 ## Actor experience
 
-1. Open the invitation in Safari or Chrome (use “Open in browser” if a messaging app blocks microphone access).
+1. Open the shared website link in Safari or Chrome (use “Open in browser” if a messaging app blocks microphone access).
 2. Enter a voice/character name.
 3. Record about **15–25 seconds**, or upload a voice memo. In-browser recording stops at 3 minutes. Supported containers: WAV, M4A/MP4, MP3, WebM, OGG, FLAC; max 10 MB.
 4. Listen back. Use the provided prompt's text or enter the exact words spoken.
-5. Confirm permission for private storage, local AI voice cloning/training, and generated speech. Send and save the receipt.
+5. Confirm permission for private storage, local AI voice cloning/training, and generated speech. Click **Upload to the team library** and wait for **Your voice is in the team library** plus the receipt.
 
 Audio stays in browser memory until upload; actors can save a copy before sending. A network retry uses the same receipt so a successful-but-disconnected upload does not duplicate. Reloading can lose an unsent recording. Upload success means GitHub saved the files, not that audio quality or transcript accuracy passed review.
 
@@ -127,7 +133,7 @@ VoiceAgent/data/training/
     library.json                # all successfully prepared takes
     dataset.jsonl               # one audio/text/speaker row per take
     backups/                    # created before explicit mode installation
-  actor_<invitation-uuid>/voice/<receipt>/
+  actor_<speaker-uuid>/voice/<receipt>/
     original.m4a                # original extension retained
     sample.wav                  # 24 kHz, mono, signed 16-bit PCM
     transcript.txt
@@ -165,7 +171,7 @@ A short clean reference is enough to try **Qwen3 zero-shot voice cloning**; it i
 - Container signatures are checked on upload; authoritative audio decoding happens locally. Files are not automatically executed. Do not treat upload validation as an audio-quality or malware scan.
 - Audio and metadata enter a single Git commit. Non-forced branch updates retry if actors upload simultaneously.
 - Metadata includes the exact consent wording/version, receipt, invitation ID, name, transcript, language, timestamp, byte count, and SHA-256. No IP address or email is stored in submission metadata.
-- Do not add actors as repository collaborators; share invitation links instead.
+- Do not add actors as repository collaborators; share the recording website URL instead.
 - For removal, search by receipt and coordinate deletion of current files, local copies, derived models, and Git history as appropriate. Removing the current file alone does not purge history.
 - No automated training or live GPU changes occur on upload.
 

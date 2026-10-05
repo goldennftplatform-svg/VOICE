@@ -48,6 +48,14 @@ class LibraryTests(unittest.TestCase):
             library.validate_metadata(self.manifest)
 
     @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg required")
+    def test_named_speaker_identity_is_used_when_present(self):
+        self.meta["speaker_id"] = "33333333-3333-4333-8333-333333333333"
+        self.save()
+        samples, errors = library.prepare(self.root, self.root / "repo")
+        self.assertEqual(errors, [])
+        self.assertEqual(samples[0]["speaker"], "actor_" + self.meta["speaker_id"])
+
+    @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg required")
     def test_prepare_converts_preserves_and_is_repeatable(self):
         samples, errors = library.prepare(self.root, self.root / "repo")
         self.assertEqual(errors, [])

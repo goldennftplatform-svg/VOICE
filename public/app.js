@@ -1,18 +1,18 @@
 /* No analytics, external scripts, or browser-visible GitHub credentials. */
 const $ = id => document.getElementById(id);
-const publicBooth = location.hostname.endsWith('.github.io');
-const token = new URLSearchParams(location.hash.slice(1)).get('invite') || sessionStorage.getItem('voice-invite') || '';
-if (token) sessionStorage.setItem('voice-invite', token);
+function cachedToken() { try { return localStorage.getItem('voice-upload-token') || sessionStorage.getItem('voice-invite') || ''; } catch { return ''; } }
+let token = new URLSearchParams(location.hash.slice(1)).get('invite') || cachedToken();
+function rememberToken() { try { localStorage.setItem('voice-upload-token', token); } catch { /* In-memory upload still works when browser storage is disabled. */ } }
+if (token) rememberToken();
 // Fragments never reach the server; also remove from the address bar after opening.
 history.replaceState(null, '', location.pathname);
 let blob, objectURL, recorder, stream, interval, started, sending = false, recording = false;
 let submissionId = crypto.randomUUID(), consentVersion;
-let savedLocally = false;
 const message = (text, error = false) => { $('message').textContent = text; $('message').classList.toggle('error', error); };
 const releaseMic = () => { stream?.getTracks().forEach(track => track.stop()); stream = null; clearInterval(interval); };
 function selectAudio(file) {
   if (objectURL) URL.revokeObjectURL(objectURL);
-  blob = file; submissionId = crypto.randomUUID(); savedLocally = false;
+  blob = file; submissionId = crypto.randomUUID();
   objectURL = URL.createObjectURL(file);
   $('playback').src = objectURL; $('download').href = objectURL;
   $('download').download = file.name || (file.type.includes('mp4') ? 'my-voice.m4a' : file.type.includes('ogg') ? 'my-voice.ogg' : 'my-voice.webm');
@@ -87,16 +87,6 @@ function send(form) {
 $('voice-form').onsubmit = async event => {
   event.preventDefault(); if (sending || recording) return;
   if (!blob) { message('Record or choose an audio file first.', true); $('record').focus(); return; }
-  if (publicBooth) {
-    sending = true; $('fields').disabled = true;
-    try {
-      await window.voiceLibraryStore.save({ id: submissionId, voice_name: $('voice-name').value.trim(), transcript: $('transcript').value.trim(), language: $('language').value.trim(), received_at: new Date().toISOString(), filename: $('download').download, audio: blob });
-      savedLocally = true;
-      message('Saved to the Voice Library on this browser. Open “Browse the Voice Library” to find and play it by name. Nothing has been uploaded; use “Save a copy to my device” for a backup.');
-    } catch { message('This browser could not save the take. Use “Save a copy to my device” above to keep your audio.', true); }
-    finally { sending = false; $('fields').disabled = false; }
-    return;
-  }
   const form = new FormData();
   form.append('audio', blob, 'recording'); form.append('voice_name', $('voice-name').value.trim());
   form.append('transcript', $('transcript').value.trim()); form.append('language', $('language').value.trim());
@@ -113,26 +103,19 @@ $('another').onclick = () => {
   clearAudio(); submissionId = crypto.randomUUID(); $('consent').checked = false;
   $('success').hidden = true; $('voice-form').hidden = false; message('Ready for your next take.'); $('record').focus();
 };
-$('fields').addEventListener('input', () => { savedLocally = false; });
-window.addEventListener('beforeunload', event => { if ((blob && !savedLocally) || recording || sending) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (blob || recording || sending) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', releaseMic);
 async function init() {
-  if (publicBooth) {
-    $('invite-status').textContent = 'This is the browser-local recording booth. To send recordings to the team, open your actor invitation link for the connected studio at voice-actor-intake.voice-intake.workers.dev. Takes saved on this page stay in this browser.';
-    $('voice-form').hidden = false;
-    $('consent').required = false;
-    $('consent').disabled = true;
-    $('consent').closest('label').hidden = true;
-    document.querySelector('.privacy-note').textContent = 'The Voice Library stores takes only on this browser and device. Clearing browser data can remove them. Download a backup and share it with your project contact to deliver a take.';
-    $('submit').textContent = 'Save to my Voice Library →';
-    return;
-  }
-  if (!token) { $('invite-status').textContent = 'Welcome to the booth. Open the personal invitation link from your project team to record and send your voice.'; return; }
+  if (window.voiceRedirecting) return;
   try {
-    const response = await fetch('/api/invite', { headers: { Authorization: `Bearer ${token}` } }); const data = await response.json();
+    let response = token ? await fetch('/api/invite', { headers: { Authorization: `Bearer ${token}` } }) : null;
+    if (!response || response.status === 401) response = await fetch('/api/session', { method: 'POST' });
+    const data = await response.json();
     if (!response.ok) throw Error(data.error);
+    if (data.token) { token = data.token; rememberToken(); }
     $('voice-name').value = data.name; $('consent-text').textContent = data.consent; consentVersion = data.consent_version;
-    $('invite-status').hidden = true; $('voice-form').hidden = false;
-  } catch (error) { $('invite-status').textContent = error.message || 'Cannot check your invitation. Please refresh when connected.'; $('invite-status').classList.add('error'); }
+    $('invite-status').textContent = 'Connected to shared storage. Your submitted take will be available to the project team from their own device.';
+    $('voice-form').hidden = false;
+  } catch (error) { $('invite-status').textContent = error.message || 'Cannot connect to shared storage. Please refresh when connected.'; $('invite-status').classList.add('error'); }
 }
 init();

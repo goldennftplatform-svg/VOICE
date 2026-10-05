@@ -7,8 +7,8 @@
   <meta name="description" content="Your voice, ready for the next story. A private recording booth for our voice actors.">
   <title>VOICE — Your recording booth</title>
   <link rel="stylesheet" href="./styles.css">
-  <script src="./library-store.js" defer></script>
-  <script src="./app.js" defer></script>
+  <script src="./site-route.js?v=cloud-upload-2"></script>
+  <script src="./app.js?v=cloud-upload-2" defer></script>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="./" aria-label="VOICE home"><span class="brand-mark" aria-hidden="true">ı▌ı▌ı</span> VOICE<span class="brand-dot">.</span></a><span class="private-badge">● ACTOR RECORDING STUDIO</span></header>
@@ -23,8 +23,8 @@
     </section>
     <section class="booth" aria-label="Voice submission">
       <div class="booth-heading"><span class="eyebrow">THE RECORDING BOOTH</span><span class="live-dot" aria-hidden="true"></span></div>
-      <p><a href="./library.html" class="text-button">Browse the Voice Library →</a></p>
-      <p id="invite-status" role="status">Checking your invitation…</p>
+      <p><a href="./library.html" class="text-button">Team review library →</a></p>
+      <p id="invite-status" role="status">Connecting to shared voice storage…</p>
       <form id="voice-form" hidden>
         <fieldset id="fields">
           <section class="step"><h2><span>01</span> Make it yours</h2><label for="voice-name">Voice / character name</label><input id="voice-name" name="voice_name" placeholder="e.g. Alex · The Storyteller" minlength="2" maxlength="60" required autocomplete="nickname"><p class="hint">Use the same name for all your takes.</p></section>
@@ -38,12 +38,12 @@
           <section class="step"><h2><span>03</span> Check & send</h2><label for="transcript">What did you say?</label><textarea id="transcript" rows="5" minlength="10" maxlength="12000" required placeholder="Paste or type the exact words in your recording."></textarea><p class="hint">If you read the prompt, tap “Use this text” above. Edit any words you changed. Accurate text helps your AI voice sound like you.</p><label for="language">Language spoken</label><input id="language" value="English" maxlength="60" required>
             <label class="consent"><input type="checkbox" id="consent" required><span id="consent-text"></span></label><p class="privacy-note">Your audio and transcript go to a private GitHub repository for the project team. To request removal or discuss usage, contact the person who invited you and share your receipt.</p>
           </section>
-          <button type="submit" class="submit" id="submit">Send my voice <span aria-hidden="true">↗</span></button>
+          <button type="submit" class="submit" id="submit">Upload to the team library <span aria-hidden="true">↗</span></button>
         </fieldset>
         <div id="progress-wrap" hidden><label for="progress">Uploading your recording…</label><progress id="progress" max="100" value="0"></progress></div>
         <p id="message" role="status" aria-live="polite"></p>
       </form>
-      <section id="success" hidden tabindex="-1"><div class="success-mark" aria-hidden="true">✓</div><p class="eyebrow">THAT’S A WRAP</p><h2>Your voice is in.</h2><p>Thanks for bringing your story to the studio. The team can now prepare your recording for the local voice workflow.</p><div class="receipt"><span class="small-label">YOUR RECEIPT</span><code id="receipt"></code></div><p class="hint">Save this receipt if you need to ask about your recording.</p><button type="button" id="another" class="submit">Send another take ↗</button></section>
+      <section id="success" hidden tabindex="-1"><div class="success-mark" aria-hidden="true">✓</div><p class="eyebrow">UPLOAD CONFIRMED</p><h2>Your voice is in the team library.</h2><p>Your audio and transcript are saved in the project’s private GitHub storage. The team can now find your name, listen, and download your take from their own device.</p><div class="receipt"><span class="small-label">YOUR RECEIPT</span><code id="receipt"></code></div><p class="hint">Save this receipt if you need to ask about your recording.</p><button type="button" id="another" class="submit">Send another take ↗</button></section>
     </section>
   </main>
   <footer><span>VOICE. <span class="muted">Made for the voices behind the story.</span></span><span>RECORD NATURALLY. MAKE IT YOURS.</span></footer>

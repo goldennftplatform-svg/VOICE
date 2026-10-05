@@ -63,6 +63,8 @@ def validate_metadata(path: Path) -> tuple[dict, Path]:
         raise ValueError("Unsupported metadata or invalid receipt")
     if not UUID.fullmatch(meta.get("invite_id", "")):
         raise ValueError("Invalid actor invitation ID")
+    if "speaker_id" in meta and not UUID.fullmatch(meta["speaker_id"]):
+        raise ValueError("Invalid speaker ID")
     if path.parent.name != meta["submission_id"] or path.parent.parent.name != meta["invite_id"]:
         raise ValueError("Metadata does not match submission directory")
     if not meta.get("consent", {}).get("accepted") or meta["consent"].get("version") != "2026-10-02":
@@ -91,8 +93,9 @@ def prepare(root: Path, checkout: Path) -> tuple[list[dict], list[str]]:
     for manifest in sorted((checkout / "submissions").glob("*/*/metadata.json")):
         try:
             meta, audio = validate_metadata(manifest)
-            # Invitation ID keeps actors with the same display name separate.
-            speaker = "actor_" + meta["invite_id"]
+            # New sessions separate different names on a shared phone; legacy
+            # invitations remain importable without rewriting their metadata.
+            speaker = "actor_" + meta.get("speaker_id", meta["invite_id"])
             dest = root / "data" / "training" / speaker / "voice" / meta["submission_id"]
             dest.mkdir(parents=True, exist_ok=True)
             wav = dest / "sample.wav"

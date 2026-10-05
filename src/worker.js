@@ -20,6 +20,23 @@ const base64 = bytes => {
   return btoa(s);
 };
 const unbase64url = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+const base64url = bytes => base64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function publicSession(request, env) {
+  if (env.PUBLIC_INTAKE !== 'true' || !env.GITHUB_TOKEN || !env.INVITE_SECRET || env.INVITE_SECRET.length < 32 || env.PREVIEW_ONLY === 'true') fail(503, 'Shared uploads are not available right now. Please contact the project team.');
+  if (request.headers.get('Origin') !== new URL(request.url).origin) fail(403, 'Open the recording website to start a submission.');
+  if (env.UPLOAD_LIMITER && !(await env.UPLOAD_LIMITER.limit({ key: `session:${request.headers.get('CF-Connecting-IP') || 'local'}` })).success) fail(429, 'Please wait a minute, then refresh to start recording.');
+  const payload = base64url(new TextEncoder().encode(JSON.stringify({ id: crypto.randomUUID(), scope: 'upload', exp: Math.floor(Date.now() / 1000) + 30 * 86400 })));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.INVITE_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signature = base64url(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))));
+  return json({ token: `${payload}.${signature}`, name: '', consent: CONSENT_TEXT, consent_version: CONSENT_VERSION });
+}
+async function actorId(invite, name) {
+  // Separate names on a shared device without merging unrelated same-named actors.
+  const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${invite.id}\0${name.normalize('NFKC').toLocaleLowerCase('en-US')}`)));
+  bytes[6] = (bytes[6] & 15) | 64; bytes[8] = (bytes[8] & 63) | 128;
+  const hex = [...bytes.subarray(0, 16)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 export async function verifyInvite(token, secret) {
   try {
     if (!secret || secret.length < 32 || !token || token.length > 2000) throw Error();
@@ -98,6 +115,8 @@ async function upload(request, env) {
   if (!env.GITHUB_TOKEN || !env.INVITE_SECRET) fail(503, 'The upload service is not configured yet. Please contact the project team.');
   if (request.headers.get('Origin') !== new URL(request.url).origin) fail(403, 'Please submit from the voice recording website.');
   const invite = await verifyInvite(request.headers.get('Authorization')?.replace(/^Bearer /, ''), env.INVITE_SECRET);
+  if (invite.scope === 'review') fail(403, 'Use the recording page to submit a voice.');
+  if (env.UPLOAD_LIMITER && !(await env.UPLOAD_LIMITER.limit({ key: `upload-ip:${request.headers.get('CF-Connecting-IP') || 'local'}` })).success) fail(429, 'Please wait one minute before trying another upload.');
   if (env.UPLOAD_LIMITER && !(await env.UPLOAD_LIMITER.limit({ key: invite.id })).success) fail(429, 'Please wait one minute before trying again.');
   if (!request.headers.get('Content-Type')?.startsWith('multipart/form-data')) fail(415, 'Use the recording form to submit audio.');
   // Bound streamed bodies too; Content-Length alone is not trustworthy.
@@ -127,7 +146,7 @@ async function upload(request, env) {
   if (file.size > MAX_BYTES) fail(413, 'The recording must be smaller than 10 MB.');
   const audio = new Uint8Array(await file.arrayBuffer()); const extension = detectAudio(audio);
   const sha256 = [...new Uint8Array(await crypto.subtle.digest('SHA-256', audio))].map(b => b.toString(16).padStart(2, '0')).join('');
-  const metadata = { schema_version: 1, submission_id: id, invite_id: invite.id, voice_name: name, transcript, language: text('language').slice(0, 60) || 'English', audio_file: `original.${extension}`, bytes: audio.length, sha256, received_at: new Date().toISOString(), consent: { version: CONSENT_VERSION, text: CONSENT_TEXT, accepted: true }, validation: 'container signature only; decode and duration validation required locally' };
+  const metadata = { schema_version: 1, submission_id: id, invite_id: invite.id, speaker_id: await actorId(invite, name), voice_name: name, transcript, language: text('language').slice(0, 60) || 'English', audio_file: `original.${extension}`, bytes: audio.length, sha256, received_at: new Date().toISOString(), consent: { version: CONSENT_VERSION, text: CONSENT_TEXT, accepted: true }, validation: 'container signature only; decode and duration validation required locally' };
   await storeSubmission(env, metadata, audio);
   return json({ ok: true, receipt: id }, 201);
 }
@@ -172,6 +191,7 @@ export default {
   async fetch(request, env) {
     try {
       const path = new URL(request.url).pathname;
+      if (path === '/api/session' && request.method === 'POST') return await publicSession(request, env);
       if (path === '/api/library' && request.method === 'GET') return await listVoices(request, env);
       if (path === '/api/library/audio' && request.method === 'GET') return await previewVoice(request, env);
       if (path === '/api/invite' && request.method === 'GET') {
