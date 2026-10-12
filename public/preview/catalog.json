@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "title": "All Hallows Eve at Meeker Mansion",
+  "clips": [
+    {
+      "id": "01_creepy_talking_head-41fe07999ca7",
+      "title": "Creepy Talking Head",
+      "voice": "Vincent Price-style voice",
+      "room": "Basement hall",
+      "filename": "01_creepy_talking_head-41fe07999ca7.mp3",
+      "duration_seconds": 49.24,
+      "sha256": "41fe07999ca7e4339df9e346e98fd13277f8e1a5695f6083ed5e53043409b64d",
+      "added_at": "2026-10-12T05:05:34.159543+00:00",
+      "transcript": "Ahhh... there you are. We've been expecting you.\n\nWelcome to All Hallows Eve at Meeker Mansion.\n\nYou may still turn back, you know. In fact... I would strongly recommend it.\n\nThere are witches cooking up trouble tonight. The dead have gathered for afternoon tea.\n\nYou'll see photographs of those who have gone before you... hear the tale of a steamship carrying gold and hops to the bottom of the sea...\n\nand attend a funeral where the dearly departed may have been declared departed just a little... too soon.\n\nStill want to continue?\n\nVery well. Enter the Mansion... if you dare."
+    },
+    {
+      "id": "04_yellow_parlor-5b224fa6080c",
+      "title": "Which One Is Dead?",
+      "voice": "Orson Welles-style voice",
+      "room": "Yellow Parlor",
+      "filename": "04_yellow_parlor-5b224fa6080c.mp3",
+      "duration_seconds": 57.01,
+      "sha256": "5b224fa6080cea307c123968eeb2fce323371572e26dc84d3c7778151ba38047",
+      "added_at": "2026-10-12T05:05:34.201043+00:00",
+      "transcript": "To the Victorians, photography offered something extraordinary—the power to preserve a face long after death had taken it away.\n\nDeath was a familiar visitor in the nineteenth century. Disease claimed adults and children alike, and for many families, there might never have been a photograph taken during life.\n\nSo the dead were sometimes photographed afterward. They were carefully dressed and posed. Sometimes alone. Sometimes surrounded by the people who loved them.\n\nTo Victorian families, these photographs were not considered grotesque. They were treasured remembrances—a final opportunity to preserve the face of someone they would never see again.\n\nToday, we look at these photographs differently. We search the faces. We notice the eyes... the hands... the expressions. And eventually, we find ourselves asking a rather uncomfortable question.\n\nWhich one is dead?\n\nLook carefully.\n\nSometimes... it isn't the one you think."
+    },
+    {
+      "id": "05_hair_wreath_full-6d549b5e3919",
+      "title": "The Hair Wreath",
+      "voice": "Rod Serling-style voice",
+      "room": "Master Bedroom",
+      "filename": "05_hair_wreath_full-6d549b5e3919.mp3",
+      "duration_seconds": 50.07,
+      "sha256": "6d549b5e39199f765728c7afafba904c7db0c566cc48a1dc4571b2eb1776c47d",
+      "added_at": "2026-10-12T05:05:34.243543+00:00",
+      "transcript": "The Victorians understood mourning as something deeply personal.\n\nWhen death entered the home, those left behind searched for ways to preserve a tangible piece of the person they had lost.\n\nOne of the most precious was hair.\n\nUnlike the body, human hair resists the passage of time.\n\nA lock could be clipped from the deceased, carefully saved, then braided, twisted and woven into intricate flowers and wreaths.\n\nThese were not considered morbid objects. They were expressions of affection.\n\nSomething real to keep when someone you loved was gone.\n\nA final, intimate connection between the living... and the dead.\n\nFor some families, it was simply...\n\na way of keeping their loved ones close."
+    },
+    {
+      "id": "07_tea_parlor-c551b193fc99",
+      "title": "Tea in the Parlor",
+      "voice": "Katharine Hepburn-style voice",
+      "room": "Eliza Jane’s Parlor",
+      "filename": "07_tea_parlor-c551b193fc99.mp3",
+      "duration_seconds": 105.39,
+      "sha256": "c551b193fc998b1afbd6a5e413e304de5b07ad75ede9518a347f6a051ace7aa3",
+      "added_at": "2026-10-12T05:05:34.289043+00:00",
+      "transcript": "They say Eliza Jane Meeker always knew how to set a proper table. One autumn afternoon, four guests gathered in her parlor for tea. The china was laid. The tea was poured. And then... the conversation simply stopped.\n\nOne by one, each guest fell strangely silent. When the parlor door was opened the next morning, all four were still sitting exactly where they had been... teacups in their hands... their dead eyes fixed upon one another.\n\nNo one ever discovered what happened. The food spoiled. Their skin dried. Their bodies withered. But no one dared disturb the table.\n\nAnd so it remains... just as it was that afternoon. Four guests... waiting patiently. So please... step quietly through Eliza Jane's parlor.\n\nThey're still having tea. And if you should notice an empty chair... whatever you do... don't accept a cup."
+    },
+    {
+      "id": "08_funeral_narrator-b6632981356f",
+      "title": "A Final Goodbye",
+      "voice": "James Earl-style voice",
+      "room": "Drawing Room",
+      "filename": "08_funeral_narrator-b6632981356f.mp3",
+      "duration_seconds": 46.7,
+      "sha256": "b6632981356fc62dc89b1cd1e175a2e0aaa19c60fd0887b47265614fe404122e",
+      "added_at": "2026-10-12T05:05:34.333046+00:00",
+      "transcript": "We gather today to mourn a life ended far too soon.\n\nIn the Victorian home, death was observed with solemn ritual. The body was washed and carefully dressed. Mirrors were covered. Clocks were stopped.\n\nFamily and friends gathered to pay their final respects before the coffin was carried away for burial.\n\nFor those left behind, this was a final moment together... a last opportunity to say goodbye... before their loved one was committed to the earth.\n\nMay this poor soul now rest in eternal peace."
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+import { handlePreviewVotes } from './preview-votes.js';
+
 const MAX_BYTES = 10 * 1024 * 1024;
 export const CONSENT_VERSION = '2026-10-02';
 export const CONSENT_TEXT = 'This is my voice, and I authorize the project team to store this recording and transcript in its private GitHub repository, download them, and use them for local AI voice cloning, model training, and speech generation for this project. I understand generated speech can contain words I did not record.';
@@ -191,6 +193,7 @@ export default {
   async fetch(request, env) {
     try {
       const path = new URL(request.url).pathname;
+      if (path === '/api/preview/votes') return await handlePreviewVotes(request, env);
       if (path === '/api/session' && request.method === 'POST') return await publicSession(request, env);
       if (path === '/api/library' && request.method === 'GET') return await listVoices(request, env);
       if (path === '/api/library/audio' && request.method === 'GET') return await previewVoice(request, env);

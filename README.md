@@ -1,5 +1,9 @@
 # VOICE · Private actor recording booth
 
+**Public MP3 previews + up/down votes:** https://goldennftplatform-svg.github.io/VOICE/preview/
+
+See [PREVIEWS.md](PREVIEWS.md) for sharing and adding more finished recordings. This public listening room is separate from the private actor-submission library.
+
 A phone-friendly link for actors to **name a voice, record or upload a take, review it, and send it**. No actor account or app installation. The site is designed for a small cast of 12–20 voices.
 
 ## Connected upload service
