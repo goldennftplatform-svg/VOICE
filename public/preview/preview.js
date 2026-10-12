@@ -66,7 +66,7 @@ function render() {
     heading.append(element('p', `${String(index + 1).padStart(2, '0')} · ${clip.room}`, 'eyebrow'), element('h2', clip.title), element('p', clip.voice, 'voice'));
     const seconds = Math.round(clip.duration_seconds); top.append(heading, element('span', `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, 'duration'));
     card.append(top);
-    const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'none'; audio.src = `./audio/${encodeURIComponent(clip.filename)}`;
+    const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'metadata'; audio.src = `./audio/${encodeURIComponent(clip.filename)}`;
     audio.setAttribute('aria-label', `Play ${clip.title}`);
     audio.onplay = () => document.querySelectorAll('audio').forEach(other => { if (other !== audio) other.pause(); });
     audio.onerror = () => { note.textContent = 'Could not load this recording. Refresh and try again.'; };
