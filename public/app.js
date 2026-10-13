@@ -134,8 +134,8 @@ async function init() {
     if (role) {
       $('voice-name').placeholder = `Your name — e.g. ${role.title}`;
       const banner = document.createElement('div');
-      banner.style.cssText = 'background:#cbeb9b18;border:1px solid #cbeb9b2b;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.6';
-      banner.innerHTML = `<strong style="color:#cbeb9b">Recording for: ${role.title}</strong><br><span style="color:#a6b8bd">${role.description}</span>`;
+      banner.className = 'role-banner';
+      banner.innerHTML = `<strong>Recording for: ${role.title}</strong><br><span>${role.description}</span>`;
       $('voice-form').insertBefore(banner, $('voice-form').firstChild);
     }
   } catch (error) { $('invite-status').textContent = error.message || 'Cannot connect to shared storage. Please refresh when connected.'; $('invite-status').classList.add('error'); }
