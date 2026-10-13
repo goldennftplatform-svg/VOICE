@@ -130,7 +130,9 @@ async function init() {
     const data = await response.json();
     if (!response.ok) throw Error(data.error);
     if (data.token) { token = data.token; rememberToken(); }
-    $('voice-name').value = data.name; $('consent-text').textContent = data.consent; consentVersion = data.consent_version;
+     if (data.role_title) $('voice-name').value = data.role_title;
+     else $('voice-name').value = data.name;
+     $('consent-text').textContent = data.consent; consentVersion = data.consent_version;
     $('invite-status').textContent = 'Connected to shared storage. Your submitted take will be available to the project team from their own device.';
     $('voice-form').hidden = false;
   } catch (error) { $('invite-status').textContent = error.message || 'Cannot connect to shared storage. Please refresh when connected.'; $('invite-status').classList.add('error'); }
