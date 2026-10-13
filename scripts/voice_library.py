@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import wave
+from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULT_REPO = "goldennftplatform-svg/VOICE-samples"
@@ -124,11 +125,115 @@ def prepare(root: Path, checkout: Path) -> tuple[list[dict], list[str]]:
     return entries, errors
 
 
+def slugify(name: str) -> str:
+    slug = "".join(c if c.isalnum() else "_" for c in name.strip().lower()).strip("_")
+    return re.sub(r"_+", "_", slug)[:48] or "voice"
+
+
+def decode_media(media: Path, root: Path, *, max_s: float = 180.0) -> tuple[Path, float]:
+    """Decode any phone/video/audio file to mono 24 kHz PCM using ffmpeg."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise ValueError("ffmpeg is required on PATH to decode recordings")
+    media = Path(media)
+    if not media.is_file():
+        raise FileNotFoundError(f"Media not found: {media}")
+    dest = root / "data" / "training" / "_voice_intake" / "local_decode"
+    dest.mkdir(parents=True, exist_ok=True)
+    out = dest / f"{_safe_stem(media.stem)}.wav"
+    run([ffmpeg, "-nostdin", "-hide_banner", "-loglevel", "error", "-protocol_whitelist", "file,pipe", "-i", str(media), "-map", "0:a:0", "-vn", "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", "-t", f"{max_s + 1:.2f}", str(out)], timeout=300)
+    if not out.is_file() or out.stat().st_size < 2000:
+        raise ValueError(f"Could not decode audio from {media.name}. Does it contain speech?")
+    with wave.open(str(out), "rb") as recording:
+        duration = recording.getnframes() / recording.getframerate()
+    if duration > max_s:
+        raise ValueError(f"{media.name} is {duration:.0f}s long. Trim it to under {max_s:.0f}s.")
+    if duration < 3:
+        raise ValueError(f"{media.name} is only {duration:.1f}s. Need at least 3 seconds of speech.")
+    return out, duration
+
+
+def transcribe_local(root: Path, wav: Path) -> str:
+    """Transcribe with the VoiceAgent virtualenv's local STT (no cloud calls)."""
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    try:
+        from stt import SpeechToText
+    except Exception as exc:
+        raise ValueError(
+            "Local transcription unavailable. Run this command with the VoiceAgent "
+            f"virtualenv python, or pass --text with the exact words. ({exc})"
+        ) from exc
+    config = json.loads(json.dumps(load_yaml(root / "config.yaml")))
+    engine = SpeechToText(config)
+    text = engine.transcribe_file(str(wav)) or ""
+    return text.strip()
+
+
+def load_yaml(path: Path) -> dict:
+    import yaml
+
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _safe_stem(name: str) -> str:
+    keep = "".join(c if c.isalnum() or c in "._-" else "_" for c in name)
+    return keep.strip("._")[:80] or "media"
+
+
+def add_local_voice(root: Path, name: str, media: Path, text: str = "", language: str = "English") -> dict:
+    """Ingest a named local recording into the training library and voice index."""
+    wav, duration = decode_media(media, root)
+    transcript = (text or "").strip() or transcribe_local(root, wav)
+    if not transcript:
+        raise ValueError("No transcript. Re-run with --text containing the exact spoken words.")
+    entry_id = slugify(name)
+    dest = root / "data" / "training" / f"local_{entry_id}" / "voice" / entry_id
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(wav, dest / "sample.wav")
+    (dest / "transcript.txt").write_text(transcript + "\n", encoding="utf-8")
+    write_json(dest / "metadata.json", {
+        "schema_version": 1,
+        "source": "local-import",
+        "voice_name": name.strip(),
+        "transcript": transcript,
+        "language": language,
+        "original_file": str(Path(media).resolve()),
+        "duration_seconds": round(duration, 3),
+        "sha256_original": hashlib.sha256(Path(media).read_bytes()).hexdigest(),
+        "imported_at": datetime.now(timezone.utc).isoformat(),
+    })
+    library = json.loads(library_path(root).read_text(encoding="utf-8")) if library_path(root).is_file() else {"schema_version": 1, "samples": [], "errors": []}
+    samples = [entry for entry in library["samples"] if entry.get("submission_id") != f"local_{entry_id}"]
+    entry = {
+        "submission_id": f"local_{entry_id}",
+        "speaker": f"local_{entry_id}",
+        "voice_name": name.strip(),
+        "audio": str((dest / "sample.wav").resolve()),
+        "text": transcript,
+        "language": language,
+        "duration_seconds": round(duration, 3),
+        "reference_ready": duration <= 45,
+        "source": "local-import",
+        "metadata": str((dest / "metadata.json").resolve()),
+    }
+    samples.append(entry)
+    library["samples"] = samples
+    write_json(library_path(root), library)
+    dataset = library_path(root).with_name("dataset.jsonl")
+    existing = [line for line in dataset.read_text(encoding="utf-8").splitlines() if line.strip() and json.loads(line)["submission_id"] != f"local_{entry_id}"] if dataset.is_file() else []
+    existing.append(json.dumps(entry, ensure_ascii=False))
+    dataset.write_text("".join(line + "\n" for line in existing), encoding="utf-8")
+    return entry
+
+
 def find_sample(root: Path, receipt: str) -> dict:
     entries = json.loads(library_path(root).read_text(encoding="utf-8"))["samples"]
     matches = [entry for entry in entries if entry["submission_id"] == receipt]
+    if not matches:
+        matches = [entry for entry in entries if entry["voice_name"].strip().lower() == receipt.strip().lower() or entry["speaker"] == receipt]
     if len(matches) != 1:
-        raise ValueError("Receipt not found. Run sync, then list to choose a complete receipt.")
+        raise ValueError(f"'{receipt}' is not a unique imported voice. Run list to see available names and receipts.")
     entry = matches[0]
     if not entry["reference_ready"]:
         raise ValueError("This take is longer than 45 seconds. Record a short reference take, or create a matching audio/text segment before cloning. The full take remains in the dataset.")
@@ -152,6 +257,11 @@ def main() -> int:
     speak.add_argument("receipt")
     speak.add_argument("--text", required=True)
     speak.add_argument("--output", type=Path, required=True)
+    add = sub.add_parser("add", help="Import a named local recording (video or audio) into the voice library")
+    add.add_argument("name")
+    add.add_argument("media", type=Path)
+    add.add_argument("--text", default="", help="Exact spoken words. Auto-transcribed locally when omitted.")
+    add.add_argument("--language", default="English")
     args = parser.parse_args()
     root = args.root.resolve()
     if not (root / "config.yaml").is_file():
@@ -163,8 +273,16 @@ def main() -> int:
             print(error, file=sys.stderr)
         return 1 if errors else 0
     if args.command == "list":
-        for item in json.loads(library_path(root).read_text(encoding="utf-8"))["samples"]:
-            print(f"{item['submission_id']}  {item['voice_name']}  {item['duration_seconds']}s  {'reference ready' if item['reference_ready'] else 'long training take'}")
+        library = json.loads(library_path(root).read_text(encoding="utf-8")) if library_path(root).is_file() else {"samples": []}
+        for item in library["samples"]:
+            source = item.get("source", "submission")
+            print(f"{item['voice_name']}  {item['duration_seconds']}s  {item['submission_id']}  {source}  {'reference ready' if item['reference_ready'] else 'long training take'}")
+        return 0
+    if args.command == "add":
+        entry = add_local_voice(root, args.name, args.media, args.text, args.language)
+        print(f"Added {entry['voice_name']} ({entry['duration_seconds']}s)")
+        print(f"  Transcript: {entry['text'][:120]}")
+        print(f"  Use it:  speak {entry['submission_id']} --text \"...\" --output out.wav")
         return 0
     sample = find_sample(root, args.receipt)
     sys.path.insert(0, str(root))

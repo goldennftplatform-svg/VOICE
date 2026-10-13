@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111b20">
+  <meta name="description" content="Voice roles still needed for All Hallows Eve at Meeker Mansion.">
+  <title>Voice Roles Needed · Meeker Mansion</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .role-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+    .role-card h2 { font-size: 24px; font-weight: 500; margin: 0 0 8px; }
+    .role-card .room { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .role-card .script { font-family: Georgia, serif; font-size: 16px; line-height: 1.85; white-space: pre-wrap; border-left: 3px solid var(--mint); padding-left: 18px; margin: 18px 0; }
+    .role-card .tips { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 18px; }
+    .role-card .tips strong { color: var(--ink); }
+    .role-link { background: var(--mint); color: #1b2920; border: 0; border-radius: 7px; padding: 14px 20px; font-weight: 700; font-size: 13px; min-height: 49px; width: 100%; cursor: pointer; }
+    .role-link:hover { background: #daf4b2; }
+    .role-link:disabled { opacity: .6; cursor: wait; }
+    .main { max-width: 760px; margin: 0 auto; padding: 48px 32px; }
+    .hero h1 { font-size: clamp(36px, 5vw, 54px); letter-spacing: -2px; font-weight: 500; margin: 18px 0; }
+    .hero .lede { color: var(--muted); font-size: 16px; line-height: 1.8; }
+    .eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: var(--mint); }
+    .back { font-size: 11px; color: var(--mint); text-decoration: none; }
+    @media(max-width:600px){ .main{padding:30px 18px} }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">ı▌ı▌ı</span> VOICE<span class="brand-dot">.</span></a>
+    <a class="text-button" href="./preview/">Listen to previews →</a>
+  </header>
+  <main class="main">
+    <section class="hero">
+      <p class="eyebrow">ALL HALLOWS EVE · MEEKER MANSION</p>
+      <h1>We still need<br><em>a few voices.</em></h1>
+      <p class="lede">Here are the roles that still need someone to record a sample. Tap a role, read the script, and send us your take.</p>
+    </section>
+    <section id="roles" aria-label="Open voice roles"></section>
+    <p id="status" role="status" aria-live="polite" style="font-size:12px;color:var(--muted)"></p>
+  </main>
+  <footer><span>VOICE. <span class="muted">Made for the voices behind the story.</span></span></footer>
+  <script>
+    const roles = [
+      {
+        id: 'dar_matron',
+        title: 'The DAR Matron',
+        room: 'Tool Room',
+        description: 'A nervous woman hiding a dangerous secret.',
+        script: "Careful now. Fill the bottle. Cork it. Wipe everything clean. No evidence.\n\nThe revenuers are getting suspicious. They've been asking questions. But if they come snooping around here, it's vinegar.\n\nIt has always been vinegar.\n\nThey must never discover what's really in these bottles. Poor Mr. Whitcomb discovered the secret. They found him three days later... his mouth black... his eyes wide open... and not a drop of blood left in him.\n\nSomeone else knows. I can feel it. The wine knows it, too.\n\nOh... No. They've seen me.\n\nNow they know. Every one of them.\n\nNo one who has learned the secret of this wine has lived long enough to tell it.\n\nPoor souls... I wonder which of them will die first.",
+        tips: 'Read it as if you\'re alone and talking to yourself. Start calm and careful, then let the fear build. Pause naturally between paragraphs. Aim for about 45-75 seconds total.'
+      }
+    ];
+    const container = document.getElementById('roles');
+    const status = document.getElementById('status');
+    const intakeBase = location.hostname.endsWith('.github.io')
+      ? 'https://voice-actor-intake.voice-intake.workers.dev/'
+      : '/';
+    for (const [index, role] of roles.entries()) {
+      const card = document.createElement('section');
+      card.className = 'role-card';
+      card.innerHTML = `
+        <p class="eyebrow">ROLE ${String(index + 1).padStart(2, '0')}</p>
+        <h2>${role.title}</h2>
+        <p class="room">${role.room} · ${role.description}</p>
+        <div class="script">${role.script}</div>
+        <p class="tips"><strong>How to record:</strong> Open the recording link, enter your name, read the script naturally, and tap "Upload to the team library". ${role.tips}</p>
+        <button class="role-link" data-role="${role.id}">Open recording link for ${role.title} ↗</button>
+      `;
+      container.appendChild(card);
+    }
+    container.addEventListener('click', async (event) => {
+      const button = event.target.closest('.role-link');
+      if (!button) return;
+      const role = roles.find(r => r.id === button.dataset.role);
+      button.disabled = true; button.textContent = 'Preparing your link…';
+      try {
+        const base = location.hostname.endsWith('.github.io') ? 'https://voice-actor-intake.voice-intake.workers.dev/' : '/';
+        const url = `${base}?role=${encodeURIComponent(role.id}#invite=`;
+        await navigator.clipboard.writeText(url);
+        status.textContent = `Recording link for "${role.title}" copied. Send it to your actor — when they open it, the script is already loaded.`;
+        button.textContent = 'Link copied — send it ↗';
+      } catch {
+        status.textContent = `Recording link: ${url}`;
+        button.disabled = false; button.textContent = 'Open recording link ↗';
+      }
+    });
+  </script>
+</body>
+</html>

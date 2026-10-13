@@ -107,6 +107,23 @@ window.addEventListener('beforeunload', event => { if (blob || recording || send
 window.addEventListener('pagehide', releaseMic);
 async function init() {
   if (window.voiceRedirecting) return;
+  const roleId = new URLSearchParams(location.search).get('role');
+  if (roleId) {
+    try {
+      const res = await fetch('./roles.json');
+      const data = await res.json();
+      const role = data.roles.find(r => r.id === roleId);
+      if (role) {
+        $('reading-prompt').textContent = role.script;
+        $('voice-name').placeholder = `Your name — e.g. ${role.title}`;
+        $('record-help').textContent = 'Read the script above. Pause naturally between paragraphs.';
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#cbeb9b18;border:1px solid #cbeb9b2b;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.6';
+        banner.innerHTML = `<strong style="color:#cbeb9b">Recording for: ${role.title}</strong><br><span style="color:#a6b8bd">${role.description}</span>`;
+        $('voice-form').insertBefore(banner, $('voice-form').firstChild);
+      }
+    } catch { /* fall back to default prompt */ }
+  }
   try {
     let response = token ? await fetch('/api/invite', { headers: { Authorization: `Bearer ${token}` } }) : null;
     if (!response || response.status === 401) response = await fetch('/api/session', { method: 'POST' });

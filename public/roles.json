@@ -1,0 +1,12 @@
+{
+  "roles": [
+    {
+      "id": "dar_matron",
+      "title": "The DAR Matron",
+      "room": "Tool Room",
+      "description": "A nervous woman hiding a dangerous secret. She works, talks to herself, and slowly realizes someone has discovered the truth.",
+      "script": "Careful now. Fill the bottle. Cork it. Wipe everything clean. No evidence.\n\nThe revenuers are getting suspicious. They've been asking questions. But if they come snooping around here, it's vinegar.\n\nIt has always been vinegar.\n\nThey must never discover what's really in these bottles. Poor Mr. Whitcomb discovered the secret. They found him three days later... his mouth black... his eyes wide open... and not a drop of blood left in him.\n\nSomeone else knows. I can feel it. The wine knows it, too.\n\nOh... No. They've seen me.\n\nNow they know. Every one of them.\n\nNo one who has learned the secret of this wine has lived long enough to tell it.\n\nPoor souls... I wonder which of them will die first.",
+      "tips": "Read it as if you're alone and talking to yourself. Start calm and careful, then let the fear build. Pause naturally between paragraphs. Aim for about 45-75 seconds total."
+    }
+  ]
+}

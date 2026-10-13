@@ -199,7 +199,7 @@ export default {
       if (path === '/api/library/audio' && request.method === 'GET') return await previewVoice(request, env);
       if (path === '/api/invite' && request.method === 'GET') {
         const invite = await verifyInvite(request.headers.get('Authorization')?.replace(/^Bearer /, ''), env.INVITE_SECRET);
-        return json({ name: invite.name || '', consent: CONSENT_TEXT, consent_version: CONSENT_VERSION });
+        return json({ name: invite.name || '', consent: CONSENT_TEXT, consent_version: CONSENT_VERSION, role: invite.role || '', role_title: invite.role_title || '' });
       }
       if (path === '/api/submit' && request.method === 'POST') return await upload(request, env);
       if (path.startsWith('/api/')) return json({ error: 'Endpoint not found.' }, 404);
