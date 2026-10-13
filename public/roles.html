@@ -73,9 +73,9 @@
       if (!button) return;
       const role = roles.find(r => r.id === button.dataset.role);
       button.disabled = true; button.textContent = 'Preparing your link…';
+      const base = location.hostname.endsWith('.github.io') ? 'https://voice-actor-intake.voice-intake.workers.dev/' : '/';
+      const url = `${base}?role=${encodeURIComponent(role.id)}`;
       try {
-        const base = location.hostname.endsWith('.github.io') ? 'https://voice-actor-intake.voice-intake.workers.dev/' : '/';
-        const url = `${base}?role=${encodeURIComponent(role.id}#invite=`;
         await navigator.clipboard.writeText(url);
         status.textContent = `Recording link for "${role.title}" copied. Send it to your actor — when they open it, the script is already loaded.`;
         button.textContent = 'Link copied — send it ↗';
