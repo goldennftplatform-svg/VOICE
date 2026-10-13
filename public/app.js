@@ -5,7 +5,7 @@ let token = new URLSearchParams(location.hash.slice(1)).get('invite') || cachedT
 function rememberToken() { try { localStorage.setItem('voice-upload-token', token); } catch { /* In-memory upload still works when browser storage is disabled. */ } }
 if (token) rememberToken();
 // Fragments never reach the server; also remove from the address bar after opening.
-history.replaceState(null, '', location.pathname);
+history.replaceState(null, '', location.pathname + location.search);
 let blob, objectURL, recorder, stream, interval, started, sending = false, recording = false;
 let submissionId = crypto.randomUUID(), consentVersion;
 const message = (text, error = false) => { $('message').textContent = text; $('message').classList.toggle('error', error); };
