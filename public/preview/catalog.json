@@ -77,22 +77,22 @@
       }
     },
     {
-      "id": "dar-matron-ai-40091b25805d",
+      "id": "dar-matron-ai-5c06b211ced7",
       "title": "DAR Matron — AI clone",
       "voice": "AI-generated voice clone · cleaned · Qwen3-TTS Base 0.6B",
       "room": "Voice comparison",
-      "filename": "dar-matron-ai-40091b25805d.mp3",
-      "duration_seconds": 10.83,
-      "sha256": "40091b25805d036d24f36aca2b5e3c29d252ae63e13befebc28a4139e03a4a9c",
-      "added_at": "2026-10-15T20:55:58.714629+00:00",
+      "filename": "dar-matron-ai-5c06b211ced7.mp3",
+      "duration_seconds": 18.37,
+      "sha256": "5c06b211ced72c3f924996a55928a95c1827435d5f482a000b270eef15c1caf0",
+      "added_at": "2026-10-15T21:56:18.768393+00:00",
       "transcript": "Poor Mr. Whitcomb discovered the secret. They found him three days later, his mouth black, his eyes wide open, and not a drop of blood left in him.",
       "comparison_id": "dar-matron",
       "recording_type": "ai_clone",
       "measurements": {
-        "duration_seconds": 10.83,
-        "integrated_lufs": -19.87,
-        "true_peak_dbtp": -2.26,
-        "words_per_minute": 155
+        "duration_seconds": 18.37,
+        "integrated_lufs": -19.25,
+        "true_peak_dbtp": -3.74,
+        "words_per_minute": 91
       }
     }
   ],
@@ -101,10 +101,10 @@
       "title": "DAR Matron — Original vs AI",
       "description": "Hear the submitted actor recording beside an AI-generated version reading the same passage. The cloning reference comes from a separate part of the take.",
       "reference_duration_seconds": 10.55,
-      "loudness_difference_lu": 0.03,
-      "ai_word_error_rate": 0.0,
-      "qa_note": "The automatic transcript matched the passage wording. Listening review is still needed.",
-      "method_note": "Both previews use light, room-tone-profiled noise reduction and matched playback loudness. The original performance timing is unchanged. AI edge silence was trimmed; no pitch shifting or time stretching was used. Duration, loudness and wording checks are measurements, not a voice-likeness score.",
+      "loudness_difference_lu": 0.65,
+      "ai_word_error_rate": 0.07142857142857142,
+      "qa_note": "Automatic transcription differences: Poor → pore; Whitcomb → WITCOME. Listen to these words; recognition can also be wrong.",
+      "method_note": "The clone was generated phrase-by-phrase on the actor's own pause structure and placed at the actor's phrase offsets, so both clips follow the same ~19-second dramatic pacing. Room-tone noise reduction and playback loudness matching were applied; no pitch shifting. Duration, loudness and wording checks are measurements, not a voice-likeness score.",
       "cleanup_note": "Reference cleanup: 1.9s of quiet gaps removed; quiet-window RMS reduced by 9.6 dB. This is a measured reference-noise indicator, not a promise of complete noise removal."
     }
   }

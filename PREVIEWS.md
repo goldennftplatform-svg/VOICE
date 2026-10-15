@@ -39,7 +39,7 @@ The five complete Meeker Mansion scenes are published: Talking Head, Yellow Parl
 
 ## Original-versus-AI comparisons
 
-**https://goldennftplatform-svg.github.io/VOICE/preview/?compare=dar-matron** shows the selected original actor excerpt and a generated clone reading the same passage, with measured duration, integrated loudness, true peak, speaking rate and automatic text checking. The cloning reference uses an earlier, non-overlapping passage. Likeness is judged by listening, not inferred from a text-match percentage.
+**https://goldennftplatform-svg.github.io/VOICE/preview/?compare=dar-matron** shows the selected original actor excerpt and a generated clone reading the same passage, with measured duration, integrated loudness, true peak, speaking rate and automatic text checking. The cloning reference uses an earlier, non-overlapping passage. The clone is generated phrase-by-phrase on the actor's own pause structure, so both clips follow the same ~19-second dramatic pacing. Likeness is judged by listening, not inferred from a text-match percentage.
 
 This comparison deliberately publishes only the selected, level-matched original excerpt and generated excerpt, as requested by the project owner. The full submitted takes, consent metadata, reference audio, source IDs and filesystem paths remain private. The personal speaker name is not inferred from a role-only upload label.
 
