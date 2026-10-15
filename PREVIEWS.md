@@ -37,6 +37,20 @@ GitHub Pages deploys automatically. The voting service reads the public catalog 
 
 The five complete Meeker Mansion scenes are published: Talking Head, Yellow Parlor, Hair Wreath (one-button full version), Tea in the Parlor, and Funeral Narrator. Split performer cues remain in the local production pack. Future scenes can be added with the command above.
 
+## Original-versus-AI comparisons
+
+**https://goldennftplatform-svg.github.io/VOICE/preview/?compare=dar-matron** shows the selected original actor excerpt and a generated clone reading the same passage, with measured duration, integrated loudness, true peak, speaking rate and automatic text checking. The cloning reference uses an earlier, non-overlapping passage. Likeness is judged by listening, not inferred from a text-match percentage.
+
+This comparison deliberately publishes only the selected, level-matched original excerpt and generated excerpt, as requested by the project owner. The full submitted takes, consent metadata, reference audio, source IDs and filesystem paths remain private. The personal speaker name is not inferred from a role-only upload label.
+
+To stage another prepared comparison report:
+
+```powershell
+python scripts/publish_preview.py comparison "C:\path\comparison_report.json" --id dar-matron --title "DAR Matron"
+```
+
+Then commit/push `public/preview` as above. The existing vote API supports the two new catalog IDs without a schema change.
+
 ## Voting service maintenance
 
 The Worker binds `PREVIEW_DB` to D1. Apply schema updates with:

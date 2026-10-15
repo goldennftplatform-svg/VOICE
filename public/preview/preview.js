@@ -2,6 +2,8 @@ const $ = id => document.getElementById(id);
 const CANONICAL = 'https://goldennftplatform-svg.github.io/VOICE/preview/';
 const API = location.hostname.endsWith('.github.io') ? 'https://voice-actor-intake.voice-intake.workers.dev/api/preview/votes' : '/api/preview/votes';
 let visitor, clips = [], votes = {}, votingReady = false, refreshing = false;
+const requestedComparison = new URLSearchParams(location.search).get('compare');
+let comparison = null;
 const cards = new Map(), pending = new Set();
 try {
   visitor = localStorage.getItem('voice-preview-voter');
@@ -43,9 +45,11 @@ async function vote(id, direction) {
   finally { pending.delete(id); updateCard(id); }
 }
 async function share(clip) {
-  const url = new URL(CANONICAL); if (clip) url.hash = `clip=${encodeURIComponent(clip.id)}`;
+  const url = new URL(CANONICAL);
+  if (comparison) url.searchParams.set('compare', requestedComparison);
+  if (clip) url.hash = `clip=${encodeURIComponent(clip.id)}`;
   try {
-    if (navigator.share) await navigator.share({ title: clip ? `${clip.title} · Meeker Mansion` : 'Meeker Mansion voice previews', url: url.href });
+    if (navigator.share) await navigator.share({ title: clip ? `${clip.title} · Meeker Mansion` : comparison?.title || 'Meeker Mansion voice previews', url: url.href });
     else {
       await navigator.clipboard.writeText(url.href);
       $('share-status').textContent = 'Link copied. Paste it into a text, email, or group chat.';
@@ -66,11 +70,24 @@ function render() {
     heading.append(element('p', `${String(index + 1).padStart(2, '0')} · ${clip.room}`, 'eyebrow'), element('h2', clip.title), element('p', clip.voice, 'voice'));
     const seconds = Math.round(clip.duration_seconds); top.append(heading, element('span', `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, 'duration'));
     card.append(top);
+    if (clip.recording_type) card.append(element('p', clip.recording_type === 'original' ? 'A · ORIGINAL ACTOR RECORDING' : 'B · AI-GENERATED CLONE', 'recording-type'));
     const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'metadata'; audio.src = `./audio/${encodeURIComponent(clip.filename)}`;
     audio.setAttribute('aria-label', `Play ${clip.title}`);
     audio.onplay = () => document.querySelectorAll('audio').forEach(other => { if (other !== audio) other.pause(); });
     audio.onerror = () => { note.textContent = 'Could not load this recording. Refresh and try again.'; };
     card.append(audio);
+    if (clip.measurements) {
+      const measurements = element('dl', '', 'measurements');
+      for (const [label, value] of [
+        ['Duration', `${clip.measurements.duration_seconds.toFixed(1)} seconds`],
+        ['Measured loudness', `${clip.measurements.integrated_lufs.toFixed(2)} LUFS`],
+        ['True peak', `${clip.measurements.true_peak_dbtp.toFixed(2)} dBTP`],
+        ['Pace (includes pauses)', `${clip.measurements.words_per_minute} words/min`],
+      ]) {
+        const item = element('div', ''); item.append(element('dt', label), element('dd', value)); measurements.append(item);
+      }
+      card.append(measurements);
+    }
     const actions = element('div', '', 'actions');
     function button(value, label, emoji) {
       const b = element('button', '', 'vote'); b.type = 'button'; b.disabled = true; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', `${value === 1 ? 'Upvote' : 'Downvote'}: ${clip.title}`);
@@ -112,7 +129,27 @@ async function init() {
     if (!response.ok) throw Error('Previews are being published. Please refresh shortly.');
     const data = await response.json();
     clips = data.clips.filter(clip => /^[a-z0-9][a-z0-9_-]{0,119}$/.test(clip.id) && /^[a-z0-9_-]+\.mp3$/.test(clip.filename));
-    $('clip-count').textContent = `${clips.length} scene${clips.length === 1 ? '' : 's'} to preview`;
+    comparison = requestedComparison && data.comparisons?.[requestedComparison];
+    if (comparison) {
+      clips = clips.filter(clip => clip.comparison_id === requestedComparison);
+      document.title = comparison.title + ' · VOICE';
+      document.querySelector('.hero h1').textContent = comparison.title;
+      document.querySelector('.hero .lede').textContent = comparison.description;
+      $('share-page').textContent = 'Share this comparison ↗';
+      $('clips').classList.add('compare-grid');
+      const info = $('comparison-info'); info.hidden = false;
+      info.append(element('h2', 'A fair listening comparison'),
+        element('p', `The clone uses a ${comparison.reference_duration_seconds.toFixed(1)}-second reference from a separate part of the recording. The two previews read the same passage and are level-matched to within ${Math.abs(comparison.loudness_difference_lu).toFixed(2)} LU.`),
+        element('p', comparison.method_note),
+        element('p', `Automatic wording check: ${(comparison.ai_word_error_rate * 100).toFixed(1)}% word difference. ${comparison.qa_note}`, 'check-note'));
+      if (comparison.cleanup_note) info.append(element('p', comparison.cleanup_note));
+      const all = element('a', '← All voice previews'); all.href = CANONICAL; $('comparison-links').append(all);
+    } else {
+      for (const [id, details] of Object.entries(data.comparisons || {})) {
+        const link = element('a', `Compare: ${details.title} ↗`); link.href = `${CANONICAL}?compare=${encodeURIComponent(id)}`; $('comparison-links').append(link);
+      }
+    }
+    $('clip-count').textContent = `${clips.length} recordings to ${comparison ? 'compare' : 'preview'}`;
     render(); filter(); jumpToClip(); await refreshVotes();
   } catch (error) { status(error.message || 'Could not load previews. Please refresh.', true); }
 }

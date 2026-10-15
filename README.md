@@ -8,6 +8,12 @@ A phone-friendly link for actors to **name a voice, record or upload a take, rev
 
 ## Connected upload service
 
+### Private admin console
+
+Open the private review link to access **Voice Admin**, the shared submission inbox (search, playback, submitted text and audio download). The plain `/library` URL requires a reviewer session; it is not a public listing.
+
+On the configured Windows workstation, double-click **Voice Admin.cmd** on the Desktop, or run `scripts/Open-Admin.ps1`. It generates a fresh seven-day review link from the locally encrypted secret and opens it. No token is embedded in the desktop launcher or committed to this repository. Production assignments and TTS rendering remain local operations, not buttons pretending to run on the cloud server.
+
 **Share this one link with every actor: https://voice-actor-intake.voice-intake.workers.dev/**
 
 They open it on their own phone, enter their voice name, record or choose a file, confirm the transcript/permission, and click **Upload to the team library**. No account or individual invitation is required. A receipt is shown only after the audio and metadata are committed to private GitHub. All devices contribute to the same team collection.

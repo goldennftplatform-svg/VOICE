@@ -9,17 +9,20 @@
   <meta property="og:type" content="website">
   <title>Meeker Mansion · Voice Previews</title>
   <link rel="stylesheet" href="./preview.css?v=1">
-  <script src="./preview.js?v=2" defer></script>
+  <link rel="stylesheet" href="./comparison.css?v=1">
+  <script src="./preview.js?v=3" defer></script>
 </head>
 <body>
   <header><a class="brand" href="./" aria-label="Voice previews home">ı▌ı▌ı <strong>VOICE.</strong><span>LISTENING ROOM</span></a><button id="share-page" class="outline" type="button">Share this page ↗</button></header>
   <main>
     <section class="hero"><p class="eyebrow">ALL HALLOWS EVE · MEEKER MANSION</p><h1>A mansion full<br>of <em>voices.</em></h1><p class="lede">Press play. Step into the story.<br>Give each performance a thumbs up or down to help shape the show.</p><div class="tags"><span id="clip-count">Loading previews…</span><span>No account needed</span><span>Works on your phone</span></div></section>
+    <section id="comparison-info" class="comparison-info" hidden aria-label="Comparison method and measurements"></section>
+    <nav id="comparison-links" class="comparison-links" aria-label="Voice comparisons"></nav>
     <section class="toolbar" aria-label="Preview controls"><div><label for="search">Find a scene or voice</label><input id="search" type="search" placeholder="Talking head, parlor, narrator…" autocomplete="off"></div><button id="refresh-votes" class="outline" type="button">Refresh votes</button></section>
     <p id="page-status" class="status" role="status" aria-live="polite">Loading the listening room…</p>
     <div id="clips" class="clips" aria-label="Audio previews"></div>
     <p id="empty" hidden>No previews match that search.</p>
-    <section class="how"><h2>Listen. React. Share.</h2><p><strong>👍 Works for me</strong> means the performance fits the scene. <strong>👎 Needs another take</strong> means you’d like a different delivery. You can change your vote, or tap it again to remove it.</p><p>Votes are saved online and shared across devices. Your selection is remembered in this browser. This is informal, anonymous feedback—not a verified one-person ballot. Clearing browser storage or using another browser can create a new voting identity.</p><p>These are generated performance previews for review. More recordings will be added here as the show develops.</p></section>
+    <section class="how"><h2>Listen. React. Share.</h2><p><strong>👍 Works for me</strong> means the performance fits the scene. <strong>👎 Needs another take</strong> means you’d like a different delivery. You can change your vote, or tap it again to remove it.</p><p>Votes are saved online and shared across devices. Your selection is remembered in this browser. This is informal, anonymous feedback—not a verified one-person ballot. Clearing browser storage or using another browser can create a new voting identity.</p><p>Original actor recordings and AI-generated comparisons are labeled separately. Other scene previews are generated performances for review. More recordings will be added as the show develops.</p></section>
     <section id="share-fallback" hidden><label for="share-url">Copy this link</label><input id="share-url" readonly></section>
     <p id="share-status" class="status" role="status" aria-live="polite"></p>
   </main>

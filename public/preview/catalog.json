@@ -56,6 +56,56 @@
       "sha256": "b6632981356fc62dc89b1cd1e175a2e0aaa19c60fd0887b47265614fe404122e",
       "added_at": "2026-10-12T05:05:34.333046+00:00",
       "transcript": "We gather today to mourn a life ended far too soon.\n\nIn the Victorian home, death was observed with solemn ritual. The body was washed and carefully dressed. Mirrors were covered. Clocks were stopped.\n\nFamily and friends gathered to pay their final respects before the coffin was carried away for burial.\n\nFor those left behind, this was a final moment together... a last opportunity to say goodbye... before their loved one was committed to the earth.\n\nMay this poor soul now rest in eternal peace."
+    },
+    {
+      "id": "dar-matron-original-c61cdc33d47f",
+      "title": "DAR Matron — Original recording",
+      "voice": "Original submitted performance · noise-reduced, level-matched",
+      "room": "Voice comparison",
+      "filename": "dar-matron-original-c61cdc33d47f.mp3",
+      "duration_seconds": 18.37,
+      "sha256": "c61cdc33d47fee03f723714bf163977ebd06466bd1372d40290985ae811a640a",
+      "added_at": "2026-10-15T20:55:58.675129+00:00",
+      "transcript": "Poor Mr. Whitcomb discovered the secret. They found him three days later, his mouth black, his eyes wide open, and not a drop of blood left in him.",
+      "comparison_id": "dar-matron",
+      "recording_type": "original",
+      "measurements": {
+        "duration_seconds": 18.37,
+        "integrated_lufs": -19.9,
+        "true_peak_dbtp": -3.07,
+        "words_per_minute": 91
+      }
+    },
+    {
+      "id": "dar-matron-ai-40091b25805d",
+      "title": "DAR Matron — AI clone",
+      "voice": "AI-generated voice clone · cleaned · Qwen3-TTS Base 0.6B",
+      "room": "Voice comparison",
+      "filename": "dar-matron-ai-40091b25805d.mp3",
+      "duration_seconds": 10.83,
+      "sha256": "40091b25805d036d24f36aca2b5e3c29d252ae63e13befebc28a4139e03a4a9c",
+      "added_at": "2026-10-15T20:55:58.714629+00:00",
+      "transcript": "Poor Mr. Whitcomb discovered the secret. They found him three days later, his mouth black, his eyes wide open, and not a drop of blood left in him.",
+      "comparison_id": "dar-matron",
+      "recording_type": "ai_clone",
+      "measurements": {
+        "duration_seconds": 10.83,
+        "integrated_lufs": -19.87,
+        "true_peak_dbtp": -2.26,
+        "words_per_minute": 155
+      }
     }
-  ]
+  ],
+  "comparisons": {
+    "dar-matron": {
+      "title": "DAR Matron — Original vs AI",
+      "description": "Hear the submitted actor recording beside an AI-generated version reading the same passage. The cloning reference comes from a separate part of the take.",
+      "reference_duration_seconds": 10.55,
+      "loudness_difference_lu": 0.03,
+      "ai_word_error_rate": 0.0,
+      "qa_note": "The automatic transcript matched the passage wording. Listening review is still needed.",
+      "method_note": "Both previews use light, room-tone-profiled noise reduction and matched playback loudness. The original performance timing is unchanged. AI edge silence was trimmed; no pitch shifting or time stretching was used. Duration, loudness and wording checks are measurements, not a voice-likeness score.",
+      "cleanup_note": "Reference cleanup: 1.9s of quiet gaps removed; quiet-window RMS reduced by 9.6 dB. This is a measured reference-noise indicator, not a promise of complete noise removal."
+    }
+  }
 }

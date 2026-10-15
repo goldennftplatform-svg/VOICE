@@ -42,6 +42,7 @@ function render() {
     card.append(text('p', `${take.language || 'English'} · ${new Date(take.received_at).toLocaleString()} · ${mode === 'local' ? 'Saved on this browser' : 'Private team upload'}`, 'take-meta'));
     const play = text('button', 'Load preview ▶', 'record-button'); play.type = 'button'; card.append(play);
     if (take.transcript) { const details = document.createElement('details'); details.append(text('summary', 'Transcript'), text('p', take.transcript, 'transcript')); card.append(details); }
+    if (/^take\s*\d|^sound sample$/i.test(take.transcript || '')) card.append(text('p', 'The submitted text looks like a take label. Prepare an actual transcript before using this take for text-conditioned voice cloning.', 'hint'));
     const actions = document.createElement('div'); actions.className = 'voice-actions'; card.append(actions);
     card.append(text('p', `Take: ${take.id || take.submission_id}`, 'receipt-id'));
     $('voice-list').append(card);
